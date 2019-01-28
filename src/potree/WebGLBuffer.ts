@@ -1,0 +1,15 @@
+interface WebGLBuffer{
+  numElements: number;
+  vao: any;
+  vbos: Map<any, any>;
+}
+
+class WebGLBuffer {
+  constructor() {
+    this.numElements = 0;
+    this.vao = null;
+    this.vbos = new Map();
+  }
+}
+
+export default WebGLBuffer;

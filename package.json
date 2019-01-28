@@ -1,0 +1,40 @@
+{
+  "name": "teatree",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack-dev-server --open",
+    "build": "webpack"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jquery": "^3.3.29",
+    "clean-webpack-plugin": "^1.0.0",
+    "copy-webpack-plugin": "^4.6.0",
+    "html-loader": "^0.5.5",
+    "html-webpack-plugin": "^3.2.0",
+    "i": "^0.3.6",
+    "jquery": "^3.3.1",
+    "webpack": "^4.28.4",
+    "webpack-cli": "^3.2.1",
+    "webpack-dev-server": "^3.1.14"
+  },
+  "dependencies": {
+    "@types/openlayers": "^4.6.15",
+    "@types/proj4": "^2.5.0",
+    "binary_heap": "^0.9.5",
+    "fs": "0.0.1-security",
+    "i18n": "^0.8.3",
+    "i18next": "^13.1.4",
+    "jquery-i18next": "^1.2.1",
+    "jquery-ui": "^1.12.1",
+    "jquery-ui-dist": "^1.12.1",
+    "openlayers": "^4.6.5",
+    "proj4": "^2.5.0",
+    "three": "^0.100.0",
+    "tween": "^0.9.0"
+  }
+}
