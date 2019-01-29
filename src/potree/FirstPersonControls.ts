@@ -8,6 +8,22 @@ import Renderer from "./Renderer";
 import { MOUSE } from "./Presets";
 import Utils from "./Utils";
 
+/**
+ * @author chrisl / Geodan
+ *
+ * adapted from Potree.FirstPersonControls by
+ *
+ * @author mschuetz / http://mschuetz.at
+ *
+ * and THREE.DeviceOrientationControls  by
+ *
+ * @author richt / http://richt.me
+ * @author WestLangley / http://github.com/WestLangley
+ *
+ *
+ *
+ */
+
 interface FirstPersonControls {
   viewer: Viewer;
   renderer: Renderer;

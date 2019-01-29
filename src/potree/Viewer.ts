@@ -22,6 +22,14 @@ import Scene from "./Scene";
 import Utils from "./Utils";
 
 import MapView from "./MapView";
+import Sidebar from './Sidebar';
+
+import ProfileWindow from './ProfileWindow';
+import ProfileWindowController from './ProfileWindowController';
+import { Annotation } from "./Annotation";
+import { Camera } from "three";
+
+import BoxVolume from './BoxVolume';
 
 interface Viewer {
   renderArea: HTMLElement;
@@ -114,6 +122,9 @@ interface Viewer {
   profileWindow: any;
   profileWindowController: any;
   useHQ?: boolean;
+
+  visibleAnnotations: Set<Annotation>
+  _previousCamera: Camera;
 }
 
 interface ViewerArgs {
@@ -1230,11 +1241,12 @@ class Viewer extends EventDispatcher {
               $(document.body).append(elProfile.children());
               this.profileWindow = new ProfileWindow(this);
               this.profileWindowController = new ProfileWindowController(this);
-
+              //@ts-ignore
               $("#profile_window").draggable({
                 handle: $("#profile_titlebar"),
                 containment: $(document.body)
               });
+              //@ts-ignore
               $("#profile_window").resizable({
                 containment: $(document.body),
                 handles: "n, e, s, w"
@@ -1254,7 +1266,9 @@ class Viewer extends EventDispatcher {
   }
 
   setLanguage(lang) {
+    //@ts-ignore;
     i18n.setLng(lang);
+    //@ts-ignore;
     $("body").i18n();
   }
 
@@ -1292,6 +1306,7 @@ class Viewer extends EventDispatcher {
       alpha: true,
       premultipliedAlpha: false,
       canvas: canvas,
+      //@ts-ignore
       context: context
     });
     this.renderer.sortObjects = false;
@@ -1317,8 +1332,11 @@ class Viewer extends EventDispatcher {
         throw new Error("OES_vertex_array_object extension not supported");
       }
 
+      //@ts-ignore
       gl.createVertexArray = extVAO.createVertexArrayOES.bind(extVAO);
+      //@ts-ignore
       gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
+      //@ts-ignore
     } else if (gl instanceof WebGL2RenderingContext) {
       gl.getExtension("EXT_color_buffer_float");
     }
@@ -1397,6 +1415,7 @@ class Viewer extends EventDispatcher {
       if (annotation.descriptionVisible) {
         zIndex += 10000000;
       }
+      //@ts-ignore
       element.css("z-index", parseInt(zIndex));
 
       if (annotation.children.length > 0) {
@@ -1431,6 +1450,8 @@ class Viewer extends EventDispatcher {
 
       notVisibleAnymore.delete(annotation);
     }
+    //TODO: visibleNow is not a set
+    //@ts-ignore;
     this.visibleAnnotations = visibleNow;
 
     for (let annotation of notVisibleAnymore) {
@@ -1514,6 +1535,7 @@ class Viewer extends EventDispatcher {
               ordered.push(array[j]);
             }
             ordered.sort();
+            //@ts-ignore
             let capIndex = parseInt((ordered.length - 1) * 0.75);
             let cap = ordered[capIndex];
 
@@ -1656,6 +1678,8 @@ class Viewer extends EventDispatcher {
 
       if (result.lowestSpacing !== Infinity) {
         let near = result.lowestSpacing * 10.0;
+        //TODO: BoundingCheck has default but in what circumstances should it be raised?
+        //@ts-ignore
         let far = -this.getBoundingBox().applyMatrix4(camera.matrixWorldInverse)
           .min.z;
 
