@@ -1,3 +1,4 @@
+import { PointSizeType, PointShape} from './potree/Presets';
 import Potree from './potree/potree';
 
 const element = document.getElementById("potree_render_area")
@@ -33,8 +34,8 @@ Potree.loadPointCloud("/static/pointclouds/lion_takanawa/cloud.js", "foundry", e
 
   scene.addPointCloud(pointcloud);
   material.size = 1;
-  material.pointSizeType = Potree.PointSizeType.ADAPTIVE;
-  material.shape = Potree.PointShape.SQUARE;
+  material.pointSizeType = PointSizeType.ADAPTIVE;
+  material.shape = PointShape.SQUARE;
 	console.log('pointcloud loaded', e)
 
   // scene.view.position.set(589974.341, 231698.397, 986.146);

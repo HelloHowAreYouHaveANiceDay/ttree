@@ -1,6 +1,6 @@
 export interface EnumItem {
   name?: string;
-  value?: string;
+  value?: any;
 }
 
 export class EnumItem {
@@ -17,6 +17,33 @@ export class EnumItem {
 
 export interface Enum {
   object: object;
+  BYTE?: EnumItem;
+  ASCII?: EnumItem;
+  SHORT?: EnumItem;
+  LONG?: EnumItem;
+  RATIONAL?: EnumItem;
+  SBYTE?: EnumItem;
+  UNDEFINED?: EnumItem;
+  SSHORT?: EnumItem;
+  SLONG?: EnumItem;
+  SRATIONAL?: EnumItem;
+  FLOAT?: EnumItem;
+  DOUBLE?: EnumItem;
+  IMAGE_WIDTH?: EnumItem;
+  IMAGE_HEIGHT?: EnumItem;
+  BITS_PER_SAMPLE?: EnumItem;
+  COMPRESSION?: EnumItem;
+  PHOTOMETRIC_INTERPRETATION?: EnumItem;
+  ORIENTATION?: EnumItem;
+  SAMPLES_PER_PIXEL?: EnumItem;
+  ROWS_PER_STRIP?: EnumItem;
+  STRIP_BYTE_COUNTS?: EnumItem;
+  PLANAR_CONFIGURATION?: EnumItem;
+  RESOLUTION_UNIT?: EnumItem;
+  SOFTWARE?: EnumItem;
+  STRIP_OFFSETS?: EnumItem;
+  X_RESOLUTION?: EnumItem;
+  Y_RESOLUTION?: EnumItem;
 }
 
 export class Enum {

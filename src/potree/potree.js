@@ -25,7 +25,7 @@ import {
 import Volume from "./Volume";
 import BoxVolume from "./BoxVolume";
 import SphereVolume from "./SphereVolume";
-import PolygonClipVolume from "./PolygonClipVolume";
+// import PolygonClipVolume from "./PolygonClipVolume";
 import Measure from "./Measure";
 import { Enum, EnumItem } from "./Enum";
 import Annotation from "./Annotation";
@@ -66,7 +66,7 @@ import PointCloudOctreeGeometryNode from "./Octree/PointCloudOctreeGeometryNode"
 
 import ClassificationScheme from "./ClassificationScheme";
 
-import PointCloudMaterial from "./PointCloudMaterial";
+import PointCloudMaterial from "./Material/PointCloudMaterial";
 import PointCloudOctreeNode from "./PointCloudOctreeNode";
 import PointCloudOctree from "./PointCloudOctree";
 
@@ -89,7 +89,7 @@ import NormalizationMaterial from "./Material/NormalizationMaterial";
 
 import POCLoader from "./Loaders/POCLoader";
 
-import ClipVolume from './ClipVolume';
+// import ClipVolume from './ClipVolume';
 
 import Viewer from './Viewer';
 
@@ -226,98 +226,6 @@ const Potree = {};
       }
     };
   }();
-
-  const Features = (function() {
-    let ftCanvas = document.createElement("canvas");
-    let gl =
-      ftCanvas.getContext("webgl2") ||
-      ftCanvas.getContext("webgl") ||
-      ftCanvas.getContext("experimental-webgl");
-    if (gl === null) {
-      return null;
-    }
-
-    // -- code taken from THREE.WebGLRenderer --
-    let _vertexShaderPrecisionHighpFloat = gl.getShaderPrecisionFormat(
-      gl.VERTEX_SHADER,
-      gl.HIGH_FLOAT
-    );
-    let _vertexShaderPrecisionMediumpFloat = gl.getShaderPrecisionFormat(
-      gl.VERTEX_SHADER,
-      gl.MEDIUM_FLOAT
-    );
-    // Unused: let _vertexShaderPrecisionLowpFloat = gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_FLOAT);
-
-    let _fragmentShaderPrecisionHighpFloat = gl.getShaderPrecisionFormat(
-      gl.FRAGMENT_SHADER,
-      gl.HIGH_FLOAT
-    );
-    let _fragmentShaderPrecisionMediumpFloat = gl.getShaderPrecisionFormat(
-      gl.FRAGMENT_SHADER,
-      gl.MEDIUM_FLOAT
-    );
-    // Unused: let _fragmentShaderPrecisionLowpFloat = gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_FLOAT);
-
-    let highpAvailable =
-      _vertexShaderPrecisionHighpFloat.precision > 0 &&
-      _fragmentShaderPrecisionHighpFloat.precision > 0;
-    let mediumpAvailable =
-      _vertexShaderPrecisionMediumpFloat.precision > 0 &&
-      _fragmentShaderPrecisionMediumpFloat.precision > 0;
-    // -----------------------------------------
-
-    let precision;
-    if (highpAvailable) {
-      precision = "highp";
-    } else if (mediumpAvailable) {
-      precision = "mediump";
-    } else {
-      precision = "lowp";
-    }
-
-    return {
-      SHADER_INTERPOLATION: {
-        isSupported: function() {
-          let supported = true;
-
-          supported = supported && gl.getExtension("EXT_frag_depth");
-          supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
-
-          return supported;
-        }
-      },
-      SHADER_SPLATS: {
-        isSupported: function() {
-          let supported = true;
-
-          supported = supported && gl.getExtension("EXT_frag_depth");
-          supported = supported && gl.getExtension("OES_texture_float");
-          supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
-
-          return supported;
-        }
-      },
-      SHADER_EDL: {
-        isSupported: function() {
-          let supported = true;
-
-          //supported = supported && gl.getExtension('EXT_frag_depth');
-          supported = supported && gl.getExtension("OES_texture_float");
-          supported = supported && gl.getParameter(gl.MAX_VARYING_VECTORS) >= 8;
-
-          supported = supported || gl instanceof WebGL2RenderingContext;
-
-          return supported;
-        }
-      },
-      WEBGL2: {
-        isSupported: function() {
-          return gl instanceof WebGL2RenderingContext;
-        }
-      },
-      precision: precision
-    };
-  })();
 
   //
   //
@@ -1417,503 +1325,6 @@ const Potree = {};
    * @author Connor Manning
    */
 
-  var GeoTIFF = (function(exports) {
-    "use strict";
-
-    const Endianness = new Enum({
-      LITTLE: "II",
-      BIG: "MM"
-    });
-
-    const Type = new Enum({
-      BYTE: { value: 1, bytes: 1 },
-      ASCII: { value: 2, bytes: 1 },
-      SHORT: { value: 3, bytes: 2 },
-      LONG: { value: 4, bytes: 4 },
-      RATIONAL: { value: 5, bytes: 8 },
-      SBYTE: { value: 6, bytes: 1 },
-      UNDEFINED: { value: 7, bytes: 1 },
-      SSHORT: { value: 8, bytes: 2 },
-      SLONG: { value: 9, bytes: 4 },
-      SRATIONAL: { value: 10, bytes: 8 },
-      FLOAT: { value: 11, bytes: 4 },
-      DOUBLE: { value: 12, bytes: 8 }
-    });
-
-    const Tag = new Enum({
-      IMAGE_WIDTH: 256,
-      IMAGE_HEIGHT: 257,
-      BITS_PER_SAMPLE: 258,
-      COMPRESSION: 259,
-      PHOTOMETRIC_INTERPRETATION: 262,
-      STRIP_OFFSETS: 273,
-      ORIENTATION: 274,
-      SAMPLES_PER_PIXEL: 277,
-      ROWS_PER_STRIP: 278,
-      STRIP_BYTE_COUNTS: 279,
-      X_RESOLUTION: 282,
-      Y_RESOLUTION: 283,
-      PLANAR_CONFIGURATION: 284,
-      RESOLUTION_UNIT: 296,
-      SOFTWARE: 305,
-      COLOR_MAP: 320,
-      SAMPLE_FORMAT: 339,
-      MODEL_PIXEL_SCALE: 33550, // [GeoTIFF] TYPE: double   N: 3
-      MODEL_TIEPOINT: 33922, // [GeoTIFF] TYPE: double   N: 6 * NUM_TIEPOINTS
-      GEO_KEY_DIRECTORY: 34735, // [GeoTIFF] TYPE: short    N: >= 4
-      GEO_DOUBLE_PARAMS: 34736, // [GeoTIFF] TYPE: short    N: variable
-      GEO_ASCII_PARAMS: 34737 // [GeoTIFF] TYPE: ascii    N: variable
-    });
-
-    const typeMapping = new Map([
-      [Type.BYTE, Uint8Array],
-      [Type.ASCII, Uint8Array],
-      [Type.SHORT, Uint16Array],
-      [Type.LONG, Uint32Array],
-      [Type.RATIONAL, Uint32Array],
-      [Type.SBYTE, Int8Array],
-      [Type.UNDEFINED, Uint8Array],
-      [Type.SSHORT, Int16Array],
-      [Type.SLONG, Int32Array],
-      [Type.SRATIONAL, Int32Array],
-      [Type.FLOAT, Float32Array],
-      [Type.DOUBLE, Float64Array]
-    ]);
-
-    class IFDEntry {
-      constructor(tag, type, count, offset, value) {
-        this.tag = tag;
-        this.type = type;
-        this.count = count;
-        this.offset = offset;
-        this.value = value;
-      }
-    }
-
-    class Image {
-      constructor() {
-        this.width = 0;
-        this.height = 0;
-        this.buffer = null;
-        this.metadata = [];
-      }
-    }
-
-    class Reader {
-      constructor() {}
-
-      static read(data) {
-        let endiannessTag = String.fromCharCode(
-          ...Array.from(data.slice(0, 2))
-        );
-        let endianness = Endianness.fromValue(endiannessTag);
-
-        let tiffCheckTag = data.readUInt8(2);
-
-        if (tiffCheckTag !== 42) {
-          throw new Error("not a valid tiff file");
-        }
-
-        let offsetToFirstIFD = data.readUInt32LE(4);
-
-        console.log("offsetToFirstIFD", offsetToFirstIFD);
-
-        let ifds = [];
-        let IFDsRead = false;
-        let currentIFDOffset = offsetToFirstIFD;
-        let i = 0;
-        while (IFDsRead || i < 100) {
-          console.log("currentIFDOffset", currentIFDOffset);
-          let numEntries = data.readUInt16LE(currentIFDOffset);
-          let nextIFDOffset = data.readUInt32LE(
-            currentIFDOffset + 2 + numEntries * 12
-          );
-
-          console.log("next offset: ", currentIFDOffset + 2 + numEntries * 12);
-
-          let entryBuffer = data.slice(
-            currentIFDOffset + 2,
-            currentIFDOffset + 2 + 12 * numEntries
-          );
-
-          for (let i = 0; i < numEntries; i++) {
-            let tag = Tag.fromValue(entryBuffer.readUInt16LE(i * 12));
-            let type = Type.fromValue(entryBuffer.readUInt16LE(i * 12 + 2));
-            let count = entryBuffer.readUInt32LE(i * 12 + 4);
-            let offsetOrValue = entryBuffer.readUInt32LE(i * 12 + 8);
-            let valueBytes = type.bytes * count;
-
-            let value;
-            if (valueBytes <= 4) {
-              value = offsetOrValue;
-            } else {
-              let valueBuffer = new Uint8Array(valueBytes);
-              valueBuffer.set(
-                data.slice(offsetOrValue, offsetOrValue + valueBytes)
-              );
-
-              let ArrayType = typeMapping.get(type);
-
-              value = new ArrayType(valueBuffer.buffer);
-
-              if (type === Type.ASCII) {
-                value = String.fromCharCode(...value);
-              }
-            }
-
-            let ifd = new IFDEntry(tag, type, count, offsetOrValue, value);
-
-            ifds.push(ifd);
-          }
-
-          console.log("nextIFDOffset", nextIFDOffset);
-
-          if (nextIFDOffset === 0) {
-            break;
-          }
-
-          currentIFDOffset = nextIFDOffset;
-          i++;
-        }
-
-        let ifdForTag = tag => {
-          for (let entry of ifds) {
-            if (entry.tag === tag) {
-              return entry;
-            }
-          }
-
-          return null;
-        };
-
-        let width = ifdForTag(Tag.IMAGE_WIDTH, ifds).value;
-        let height = ifdForTag(Tag.IMAGE_HEIGHT, ifds).value;
-        let compression = ifdForTag(Tag.COMPRESSION, ifds).value;
-        let rowsPerStrip = ifdForTag(Tag.ROWS_PER_STRIP, ifds).value;
-        let ifdStripOffsets = ifdForTag(Tag.STRIP_OFFSETS, ifds);
-        let ifdStripByteCounts = ifdForTag(Tag.STRIP_BYTE_COUNTS, ifds);
-
-        let numStrips = Math.ceil(height / rowsPerStrip);
-
-        let stripByteCounts = [];
-        for (let i = 0; i < ifdStripByteCounts.count; i++) {
-          let type = ifdStripByteCounts.type;
-          let offset = ifdStripByteCounts.offset + i * type.bytes;
-
-          let value;
-          if (type === Type.SHORT) {
-            value = data.readUInt16LE(offset);
-          } else if (type === Type.LONG) {
-            value = data.readUInt32LE(offset);
-          }
-
-          stripByteCounts.push(value);
-        }
-
-        let stripOffsets = [];
-        for (let i = 0; i < ifdStripOffsets.count; i++) {
-          let type = ifdStripOffsets.type;
-          let offset = ifdStripOffsets.offset + i * type.bytes;
-
-          let value;
-          if (type === Type.SHORT) {
-            value = data.readUInt16LE(offset);
-          } else if (type === Type.LONG) {
-            value = data.readUInt32LE(offset);
-          }
-
-          stripOffsets.push(value);
-        }
-
-        let imageBuffer = new Uint8Array(width * height * 3);
-
-        let linesProcessed = 0;
-        for (let i = 0; i < numStrips; i++) {
-          let stripOffset = stripOffsets[i];
-          let stripBytes = stripByteCounts[i];
-          let stripData = data.slice(stripOffset, stripOffset + stripBytes);
-          let lineBytes = width * 3;
-          for (let y = 0; y < rowsPerStrip; y++) {
-            let line = stripData.slice(
-              y * lineBytes,
-              y * lineBytes + lineBytes
-            );
-            imageBuffer.set(line, linesProcessed * lineBytes);
-
-            if (line.length === lineBytes) {
-              linesProcessed++;
-            } else {
-              break;
-            }
-          }
-        }
-
-        console.log(`width: ${width}`);
-        console.log(`height: ${height}`);
-        console.log(`numStrips: ${numStrips}`);
-        console.log("stripByteCounts", stripByteCounts.join(", "));
-        console.log("stripOffsets", stripOffsets.join(", "));
-
-        let image = new Image();
-        image.width = width;
-        image.height = height;
-        image.buffer = imageBuffer;
-        image.metadata = ifds;
-
-        return image;
-      }
-    }
-
-    class Exporter {
-      constructor() {}
-
-      static toTiffBuffer(image, params = {}) {
-        let offsetToFirstIFD = 8;
-
-        let headerBuffer = new Uint8Array([
-          0x49,
-          0x49,
-          42,
-          0,
-          offsetToFirstIFD,
-          0,
-          0,
-          0
-        ]);
-
-        let [width, height] = [image.width, image.height];
-
-        let ifds = [
-          new IFDEntry(Tag.IMAGE_WIDTH, Type.SHORT, 1, null, width),
-          new IFDEntry(Tag.IMAGE_HEIGHT, Type.SHORT, 1, null, height),
-          new IFDEntry(
-            Tag.BITS_PER_SAMPLE,
-            Type.SHORT,
-            4,
-            null,
-            new Uint16Array([8, 8, 8, 8])
-          ),
-          new IFDEntry(Tag.COMPRESSION, Type.SHORT, 1, null, 1),
-          new IFDEntry(Tag.PHOTOMETRIC_INTERPRETATION, Type.SHORT, 1, null, 2),
-          new IFDEntry(Tag.ORIENTATION, Type.SHORT, 1, null, 1),
-          new IFDEntry(Tag.SAMPLES_PER_PIXEL, Type.SHORT, 1, null, 4),
-          new IFDEntry(Tag.ROWS_PER_STRIP, Type.LONG, 1, null, height),
-          new IFDEntry(
-            Tag.STRIP_BYTE_COUNTS,
-            Type.LONG,
-            1,
-            null,
-            width * height * 3
-          ),
-          new IFDEntry(Tag.PLANAR_CONFIGURATION, Type.SHORT, 1, null, 1),
-          new IFDEntry(Tag.RESOLUTION_UNIT, Type.SHORT, 1, null, 1),
-          new IFDEntry(Tag.SOFTWARE, Type.ASCII, 6, null, "......"),
-          new IFDEntry(Tag.STRIP_OFFSETS, Type.LONG, 1, null, null),
-          new IFDEntry(
-            Tag.X_RESOLUTION,
-            Type.RATIONAL,
-            1,
-            null,
-            new Uint32Array([1, 1])
-          ),
-          new IFDEntry(
-            Tag.Y_RESOLUTION,
-            Type.RATIONAL,
-            1,
-            null,
-            new Uint32Array([1, 1])
-          )
-        ];
-
-        if (params.ifdEntries) {
-          ifds.push(...params.ifdEntries);
-        }
-
-        let valueOffset = offsetToFirstIFD + 2 + ifds.length * 12 + 4;
-
-        // create 12 byte buffer for each ifd and variable length buffers for ifd values
-        let ifdEntryBuffers = new Map();
-        let ifdValueBuffers = new Map();
-        for (let ifd of ifds) {
-          let entryBuffer = new ArrayBuffer(12);
-          let entryView = new DataView(entryBuffer);
-
-          let valueBytes = ifd.type.bytes * ifd.count;
-
-          entryView.setUint16(0, ifd.tag.value, true);
-          entryView.setUint16(2, ifd.type.value, true);
-          entryView.setUint32(4, ifd.count, true);
-
-          if (ifd.count === 1 && ifd.type.bytes <= 4) {
-            entryView.setUint32(8, ifd.value, true);
-          } else {
-            entryView.setUint32(8, valueOffset, true);
-
-            let valueBuffer = new Uint8Array(ifd.count * ifd.type.bytes);
-            if (ifd.type === Type.ASCII) {
-              valueBuffer.set(
-                new Uint8Array(ifd.value.split("").map(c => c.charCodeAt(0)))
-              );
-            } else {
-              valueBuffer.set(new Uint8Array(ifd.value.buffer));
-            }
-            ifdValueBuffers.set(ifd.tag, valueBuffer);
-
-            valueOffset = valueOffset + valueBuffer.byteLength;
-          }
-
-          ifdEntryBuffers.set(ifd.tag, entryBuffer);
-        }
-
-        let imageBufferOffset = valueOffset;
-
-        new DataView(ifdEntryBuffers.get(Tag.STRIP_OFFSETS)).setUint32(
-          8,
-          imageBufferOffset,
-          true
-        );
-
-        let concatBuffers = buffers => {
-          let totalLength = buffers.reduce(
-            (sum, buffer) => sum + buffer.byteLength,
-            0
-          );
-          let merged = new Uint8Array(totalLength);
-
-          let offset = 0;
-          for (let buffer of buffers) {
-            merged.set(new Uint8Array(buffer), offset);
-            offset += buffer.byteLength;
-          }
-
-          return merged;
-        };
-
-        let ifdBuffer = concatBuffers([
-          new Uint16Array([ifds.length]),
-          ...ifdEntryBuffers.values(),
-          new Uint32Array([0])
-        ]);
-        let ifdValueBuffer = concatBuffers([...ifdValueBuffers.values()]);
-
-        let tiffBuffer = concatBuffers([
-          headerBuffer,
-          ifdBuffer,
-          ifdValueBuffer,
-          image.buffer
-        ]);
-
-        return { width: width, height: height, buffer: tiffBuffer };
-      }
-    }
-
-    exports.Tag = Tag;
-    exports.Type = Type;
-    exports.IFDEntry = IFDEntry;
-    exports.Image = Image;
-    exports.Reader = Reader;
-    exports.Exporter = Exporter;
-
-    return exports;
-  })({});
-
-  class Message {
-    constructor(content) {
-      this.content = content;
-
-      let closeIcon = `${exports.resourcePath}/icons/close.svg`;
-
-      this.element = $(`
-			<div class="potree_message">
-				<span name="content_container" style="flex-grow: 1; padding: 5px"></span>
-				<img name="close" src="${closeIcon}" class="button-icon" style="width: 16px; height: 16px;">
-			</div>`);
-
-      this.elClose = this.element.find("img[name=close]");
-
-      this.elContainer = this.element.find("span[name=content_container]");
-
-      if (typeof content === "string") {
-        this.elContainer.append($(`<span>${content}</span>`));
-      } else {
-        this.elContainer.append(content);
-      }
-    }
-
-    setMessage(content) {
-      this.elContainer.empty();
-      if (typeof content === "string") {
-        this.elContainer.append($(`<span>${content}</span>`));
-      } else {
-        this.elContainer.append(content);
-      }
-    }
-  }
-
-  class PointCloudSM {
-    constructor(potreeRenderer) {
-      this.potreeRenderer = potreeRenderer;
-      this.threeRenderer = this.potreeRenderer.threeRenderer;
-
-      this.target = new THREE.WebGLRenderTarget(2 * 1024, 2 * 1024, {
-        minFilter: THREE.LinearFilter,
-        magFilter: THREE.LinearFilter,
-        format: THREE.RGBAFormat,
-        type: THREE.FloatType
-      });
-      this.target.depthTexture = new THREE.DepthTexture();
-      this.target.depthTexture.type = THREE.UnsignedIntType;
-
-      //this.target = new THREE.WebGLRenderTarget(1024, 1024, {
-      //	minFilter: THREE.NearestFilter,
-      //	magFilter: THREE.NearestFilter,
-      //	format: THREE.RGBAFormat,
-      //	type: THREE.FloatType,
-      //	depthTexture: new THREE.DepthTexture(undefined, undefined, THREE.UnsignedIntType)
-      //});
-
-      this.threeRenderer.setClearColor(0x000000, 1);
-      this.threeRenderer.clearTarget(this.target, true, true, true);
-    }
-
-    setLight(light) {
-      this.light = light;
-
-      let fov = (180 * light.angle) / Math.PI;
-      let aspect = light.shadow.mapSize.width / light.shadow.mapSize.height;
-      let near = 0.1;
-      let far = light.distance === 0 ? 10000 : light.distance;
-      this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-      this.camera.up.set(0, 0, 1);
-      this.camera.position.copy(light.position);
-
-      let target = new THREE.Vector3().addVectors(
-        light.position,
-        light.getWorldDirection(new THREE.Vector3())
-      );
-      this.camera.lookAt(target);
-
-      this.camera.updateProjectionMatrix();
-      this.camera.updateMatrix();
-      this.camera.updateMatrixWorld();
-      this.camera.matrixWorldInverse.getInverse(this.camera.matrixWorld);
-    }
-
-    setSize(width, height) {
-      if (this.target.width !== width || this.target.height !== height) {
-        this.target.dispose();
-      }
-      this.target.setSize(width, height);
-    }
-
-    render(scene, camera) {
-      //this.threeRenderer.setClearColor(0x00ff00, 1);
-
-      this.threeRenderer.clearTarget(this.target, true, true, true);
-      this.potreeRenderer.render(scene, this.camera, this.target, {});
-    }
-  }
-
   class SpotLightHelper extends THREE.Object3D {
     constructor(light, color) {
       super();
@@ -2147,445 +1558,6 @@ const Potree = {};
   }
 
 
-  class PotreeRenderer {
-    constructor(viewer) {
-      this.viewer = viewer;
-    }
-
-    render() {
-      const viewer = this.viewer;
-
-      viewer.dispatchEvent({ type: "render.pass.begin", viewer: viewer });
-
-      // render skybox
-      if (viewer.background === "skybox") {
-        viewer.renderer.clear(true, true, false);
-        viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
-        viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
-        viewer.skybox.camera.aspect = viewer.scene.cameraP.aspect;
-        viewer.skybox.camera.updateProjectionMatrix();
-        viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
-      } else if (viewer.background === "gradient") {
-        viewer.renderer.clear(true, true, false);
-        viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
-      } else if (viewer.background === "black") {
-        viewer.renderer.setClearColor(0x000000, 1);
-        viewer.renderer.clear(true, true, false);
-      } else if (viewer.background === "white") {
-        viewer.renderer.setClearColor(0xffffff, 1);
-        viewer.renderer.clear(true, true, false);
-      } else {
-        viewer.renderer.setClearColor(0x000000, 0);
-        viewer.renderer.clear(true, true, false);
-      }
-
-      for (let pointcloud of this.viewer.scene.pointclouds) {
-        pointcloud.material.useEDL = false;
-      }
-
-      let activeCam = viewer.scene.getActiveCamera();
-      //viewer.renderer.render(viewer.scene.scenePointCloud, activeCam);
-
-      viewer.pRenderer.render(viewer.scene.scenePointCloud, activeCam, null, {
-        clipSpheres: viewer.scene.volumes.filter(
-          v => v instanceof Potree.SphereVolume
-        )
-      });
-
-      // render scene
-      viewer.renderer.render(viewer.scene.scene, activeCam);
-
-      viewer.dispatchEvent({ type: "render.pass.scene", viewer: viewer });
-
-      viewer.clippingTool.update();
-      viewer.renderer.render(
-        viewer.clippingTool.sceneMarker,
-        viewer.scene.cameraScreenSpace
-      ); //viewer.scene.cameraScreenSpace);
-      viewer.renderer.render(viewer.clippingTool.sceneVolume, activeCam);
-
-      viewer.renderer.render(viewer.controls.sceneControls, activeCam);
-
-      viewer.renderer.clearDepth();
-
-      viewer.transformationTool.update();
-
-      viewer.dispatchEvent({
-        type: "render.pass.perspective_overlay",
-        viewer: viewer
-      });
-
-      viewer.renderer.render(viewer.transformationTool.scene, activeCam);
-
-      viewer.renderer.setViewport(
-        viewer.renderer.domElement.clientWidth - viewer.navigationCube.width,
-        viewer.renderer.domElement.clientHeight - viewer.navigationCube.width,
-        viewer.navigationCube.width,
-        viewer.navigationCube.width
-      );
-      viewer.renderer.render(
-        viewer.navigationCube,
-        viewer.navigationCube.camera
-      );
-      viewer.renderer.setViewport(
-        0,
-        0,
-        viewer.renderer.domElement.clientWidth,
-        viewer.renderer.domElement.clientHeight
-      );
-
-      viewer.dispatchEvent({ type: "render.pass.end", viewer: viewer });
-    }
-  }
-
-  class EDLRenderer {
-    constructor(viewer) {
-      this.viewer = viewer;
-
-      this.edlMaterial = null;
-
-      this.rtRegular;
-      this.rtEDL;
-
-      this.gl = viewer.renderer.context;
-
-      this.shadowMap = new PointCloudSM(this.viewer.pRenderer);
-    }
-
-    initEDL() {
-      if (this.edlMaterial != null) {
-        return;
-      }
-
-      this.edlMaterial = new EyeDomeLightingMaterial();
-      this.edlMaterial.depthTest = true;
-      this.edlMaterial.depthWrite = true;
-      this.edlMaterial.transparent = true;
-
-      this.rtEDL = new THREE.WebGLRenderTarget(1024, 1024, {
-        minFilter: THREE.NearestFilter,
-        magFilter: THREE.NearestFilter,
-        format: THREE.RGBAFormat,
-        type: THREE.FloatType,
-        depthTexture: new THREE.DepthTexture(
-          undefined,
-          undefined,
-          THREE.UnsignedIntType
-        )
-      });
-
-      this.rtRegular = new THREE.WebGLRenderTarget(1024, 1024, {
-        minFilter: THREE.NearestFilter,
-        magFilter: THREE.NearestFilter,
-        format: THREE.RGBAFormat,
-        depthTexture: new THREE.DepthTexture(
-          undefined,
-          undefined,
-          THREE.UnsignedIntType
-        )
-      });
-
-      //{
-      //	let geometry = new THREE.PlaneBufferGeometry( 1, 1, 32, 32);
-      //	let material = new THREE.MeshBasicMaterial( {side: THREE.DoubleSide, map: this.shadowMap.target.texture} );
-      //	let plane = new THREE.Mesh( geometry, material );
-      //	plane.scale.set(0.5, 0.5, 1.0);
-      //	plane.position.set(plane.scale.x / 2, plane.scale.y / 2, 0);
-      //	this.viewer.overlay.add(plane);
-      //}
-    }
-
-    resize() {
-      const viewer = this.viewer;
-
-      let pixelRatio = viewer.renderer.getPixelRatio();
-      let { width, height } = viewer.renderer.getSize();
-
-      if (this.screenshot) {
-        width = this.screenshot.target.width;
-        height = this.screenshot.target.height;
-      }
-
-      this.rtEDL.setSize(width * pixelRatio, height * pixelRatio);
-      this.rtRegular.setSize(width * pixelRatio, height * pixelRatio);
-    }
-
-    makeScreenshot(camera, size, callback) {
-      if (camera === undefined || camera === null) {
-        camera = this.viewer.scene.getActiveCamera();
-      }
-
-      if (size === undefined || size === null) {
-        size = this.viewer.renderer.getSize();
-      }
-
-      let { width, height } = size;
-
-      //let maxTextureSize = viewer.renderer.capabilities.maxTextureSize;
-      //if(width * 4 <
-      width = 2 * width;
-      height = 2 * height;
-
-      let target = new THREE.WebGLRenderTarget(width, height, {
-        format: THREE.RGBAFormat
-      });
-
-      this.screenshot = {
-        target: target
-      };
-
-      this.viewer.renderer.clearTarget(target, true, true, true);
-
-      this.render();
-
-      let pixelCount = width * height;
-      let buffer = new Uint8Array(4 * pixelCount);
-
-      this.viewer.renderer.readRenderTargetPixels(
-        target,
-        0,
-        0,
-        width,
-        height,
-        buffer
-      );
-
-      // flip vertically
-      let bytesPerLine = width * 4;
-      for (let i = 0; i < parseInt(height / 2); i++) {
-        let j = height - i - 1;
-
-        let lineI = buffer.slice(
-          i * bytesPerLine,
-          i * bytesPerLine + bytesPerLine
-        );
-        let lineJ = buffer.slice(
-          j * bytesPerLine,
-          j * bytesPerLine + bytesPerLine
-        );
-        buffer.set(lineJ, i * bytesPerLine);
-        buffer.set(lineI, j * bytesPerLine);
-      }
-
-      this.screenshot.target.dispose();
-      delete this.screenshot;
-
-      return {
-        width: width,
-        height: height,
-        buffer: buffer
-      };
-    }
-
-    render() {
-      this.initEDL();
-      const viewer = this.viewer;
-
-      viewer.dispatchEvent({ type: "render.pass.begin", viewer: viewer });
-
-      this.resize();
-
-      if (this.screenshot) {
-        let oldBudget = Potree.pointBudget;
-        Potree.pointBudget = Math.max(10 * 1000 * 1000, 2 * oldBudget);
-        let result = Potree.updatePointClouds(
-          viewer.scene.pointclouds,
-          viewer.scene.getActiveCamera(),
-          viewer.renderer
-        );
-        Potree.pointBudget = oldBudget;
-      }
-
-      let camera = viewer.scene.getActiveCamera();
-
-      let lights = [];
-      viewer.scene.scene.traverse(node => {
-        if (node instanceof THREE.SpotLight) {
-          lights.push(node);
-        }
-      });
-
-      if (viewer.background === "skybox") {
-        viewer.renderer.setClearColor(0x000000, 0);
-        viewer.renderer.clear();
-        viewer.skybox.camera.rotation.copy(viewer.scene.cameraP.rotation);
-        viewer.skybox.camera.fov = viewer.scene.cameraP.fov;
-        viewer.skybox.camera.aspect = viewer.scene.cameraP.aspect;
-        viewer.skybox.camera.updateProjectionMatrix();
-        viewer.renderer.render(viewer.skybox.scene, viewer.skybox.camera);
-      } else if (viewer.background === "gradient") {
-        viewer.renderer.setClearColor(0x000000, 0);
-        viewer.renderer.clear();
-        viewer.renderer.render(viewer.scene.sceneBG, viewer.scene.cameraBG);
-      } else if (viewer.background === "black") {
-        viewer.renderer.setClearColor(0x000000, 1);
-        viewer.renderer.clear();
-      } else if (viewer.background === "white") {
-        viewer.renderer.setClearColor(0xffffff, 1);
-        viewer.renderer.clear();
-      } else {
-        viewer.renderer.setClearColor(0x000000, 0);
-        viewer.renderer.clear();
-      }
-
-      // TODO adapt to multiple lights
-      if (lights.length > 0 && !lights[0].disableShadowUpdates) {
-        let light = lights[0];
-
-        this.shadowMap.setLight(light);
-
-        let originalAttributes = new Map();
-        for (let pointcloud of viewer.scene.pointclouds) {
-          originalAttributes.set(
-            pointcloud,
-            pointcloud.material.pointColorType
-          );
-          pointcloud.material.disableEvents();
-          pointcloud.material.pointColorType = PointColorType.DEPTH;
-        }
-
-        this.shadowMap.render(viewer.scene.scenePointCloud, camera);
-
-        for (let pointcloud of viewer.scene.pointclouds) {
-          let originalAttribute = originalAttributes.get(pointcloud);
-          pointcloud.material.pointColorType = originalAttribute;
-          pointcloud.material.enableEvents();
-        }
-
-        viewer.shadowTestCam.updateMatrixWorld();
-        viewer.shadowTestCam.matrixWorldInverse.getInverse(
-          viewer.shadowTestCam.matrixWorld
-        );
-        viewer.shadowTestCam.updateProjectionMatrix();
-      }
-
-      //viewer.renderer.render(viewer.scene.scene, camera);
-
-      //viewer.renderer.clearTarget( this.rtColor, true, true, true );
-      viewer.renderer.clearTarget(this.rtEDL, true, true, true);
-      viewer.renderer.clearTarget(this.rtRegular, true, true, false);
-
-      let width = viewer.renderer.getSize().width;
-      let height = viewer.renderer.getSize().height;
-
-      // COLOR & DEPTH PASS
-      for (let pointcloud of viewer.scene.pointclouds) {
-        let octreeSize = pointcloud.pcoGeometry.boundingBox.getSize(
-          new THREE.Vector3()
-        ).x;
-
-        let material = pointcloud.material;
-        material.weighted = false;
-        material.useLogarithmicDepthBuffer = false;
-        material.useEDL = true;
-
-        material.screenWidth = width;
-        material.screenHeight = height;
-        material.uniforms.visibleNodes.value =
-          pointcloud.material.visibleNodesTexture;
-        material.uniforms.octreeSize.value = octreeSize;
-        material.spacing =
-          pointcloud.pcoGeometry.spacing *
-          Math.max(pointcloud.scale.x, pointcloud.scale.y, pointcloud.scale.z);
-      }
-
-      // TODO adapt to multiple lights
-      if (lights.length > 0) {
-        viewer.pRenderer.render(
-          viewer.scene.scenePointCloud,
-          camera,
-          this.rtEDL,
-          {
-            clipSpheres: viewer.scene.volumes.filter(
-              v => v instanceof SphereVolume
-            ),
-            shadowMaps: [this.shadowMap],
-            transparent: false
-          }
-        );
-      } else {
-        viewer.pRenderer.render(
-          viewer.scene.scenePointCloud,
-          camera,
-          this.rtEDL,
-          {
-            clipSpheres: viewer.scene.volumes.filter(
-              v => v instanceof SphereVolume
-            ),
-            transparent: false
-          }
-        );
-      }
-
-      //viewer.renderer.render(viewer.scene.scene, camera, this.rtRegular);
-      viewer.renderer.render(viewer.scene.scene, camera);
-
-      //viewer.renderer.setRenderTarget(this.rtColor);
-      //viewer.dispatchEvent({type: "render.pass.scene", viewer: viewer, renderTarget: this.rtRegular});
-
-      {
-        // EDL OCCLUSION PASS
-        this.edlMaterial.uniforms.screenWidth.value = width;
-        this.edlMaterial.uniforms.screenHeight.value = height;
-
-        //this.edlMaterial.uniforms.colorMap.value = this.rtColor.texture;
-
-        let proj = camera.projectionMatrix;
-        let projArray = new Float32Array(16);
-        projArray.set(proj.elements);
-
-        this.edlMaterial.uniforms.uNear.value = camera.near;
-        this.edlMaterial.uniforms.uFar.value = camera.far;
-        //this.edlMaterial.uniforms.uRegularColor.value = this.rtRegular.texture;
-        this.edlMaterial.uniforms.uEDLColor.value = this.rtEDL.texture;
-        //this.edlMaterial.uniforms.uRegularDepth.value = this.rtRegular.depthTexture;
-        this.edlMaterial.uniforms.uEDLDepth.value = this.rtEDL.depthTexture;
-        this.edlMaterial.uniforms.uProj.value = projArray;
-
-        this.edlMaterial.uniforms.edlStrength.value = viewer.edlStrength;
-        this.edlMaterial.uniforms.radius.value = viewer.edlRadius;
-        this.edlMaterial.uniforms.opacity.value = 1;
-
-        Utils.screenPass.render(viewer.renderer, this.edlMaterial);
-
-        if (this.screenshot) {
-          Utils.screenPass.render(
-            viewer.renderer,
-            this.edlMaterial,
-            this.screenshot.target
-          );
-        }
-      }
-
-      viewer.renderer.clearDepth();
-
-      viewer.transformationTool.update();
-
-      viewer.dispatchEvent({
-        type: "render.pass.perspective_overlay",
-        viewer: viewer
-      });
-
-      viewer.renderer.render(viewer.controls.sceneControls, camera);
-      viewer.renderer.render(viewer.clippingTool.sceneVolume, camera);
-      viewer.renderer.render(viewer.transformationTool.scene, camera);
-
-      viewer.renderer.setViewport(
-        width - viewer.navigationCube.width,
-        height - viewer.navigationCube.width,
-        viewer.navigationCube.width,
-        viewer.navigationCube.width
-      );
-      viewer.renderer.render(
-        viewer.navigationCube,
-        viewer.navigationCube.camera
-      );
-      viewer.renderer.setViewport(0, 0, width, height);
-
-      viewer.dispatchEvent({ type: "render.pass.end", viewer: viewer });
-    }
-  }
-
   // http://epsg.io/
   proj4.defs(
     "UTM10N",
@@ -2683,12 +1655,15 @@ const Potree = {};
 
   const debug = {};
 
+
+  // gets the path of the current script for static asset imports
   exports.scriptPath = "";
   if (document.currentScript.src) {
     exports.scriptPath = new URL(document.currentScript.src + "/..").href;
     if (exports.scriptPath.slice(-1) === "/") {
       exports.scriptPath = exports.scriptPath.slice(0, -1);
     }
+    console.log('script path', exports.scriptPath);
   } else {
     console.error(
       "Potree was unable to find its script path using document.currentScript. Is Potree included with a script tag? Does your browser support this function?"
@@ -2839,87 +1814,87 @@ const Potree = {};
   exports.numNodesLoading = numNodesLoading;
   exports.maxNodesLoading = maxNodesLoading;
   exports.debug = debug;
-  exports.resourcePath = resourcePath;
+  // exports.resourcePath = resourcePath;
   exports.loadPointCloud = loadPointCloud;
   exports.Action = Action;
   exports.PathAnimation = PathAnimation;
   exports.AnimationPath = AnimationPath;
-  exports.Annotation = Annotation;
-  exports.CameraMode = CameraMode;
-  exports.ClipTask = ClipTask;
-  exports.ClipMethod = ClipMethod;
-  exports.MOUSE = MOUSE;
-  exports.PointSizeType = PointSizeType;
-  exports.PointShape = PointShape;
-  exports.PointColorType = PointColorType;
-  exports.TreeType = TreeType;
-  exports.Enum = Enum;
-  exports.EnumItem = EnumItem;
-  exports.EventDispatcher = EventDispatcher;
-  exports.Features = Features;
-  exports.KeyCodes = KeyCodes;
-  exports.LRU = LRU;
-  exports.LRUItem = LRUItem;
-  exports.PointCloudEptGeometry = PointCloudEptGeometry;
-  exports.EptKey = EptKey;
-  exports.PointCloudEptGeometryNode = PointCloudEptGeometryNode;
-  exports.PointCloudGreyhoundGeometry = PointCloudGreyhoundGeometry;
-  exports.PointCloudGreyhoundGeometryNode = PointCloudGreyhoundGeometryNode$1;
-  exports.PointCloudOctreeNode = PointCloudOctreeNode;
-  exports.PointCloudOctree = PointCloudOctree;
-  exports.PointCloudOctreeGeometry = PointCloudOctreeGeometry;
-  exports.PointCloudOctreeGeometryNode = PointCloudOctreeGeometryNode;
-  exports.PointCloudTreeNode = PointCloudTreeNode;
-  exports.PointCloudTree = PointCloudTree;
-  exports.Points = Points;
+  // exports.Annotation = Annotation;
+  // exports.CameraMode = CameraMode;
+  // exports.ClipTask = ClipTask;
+  // exports.ClipMethod = ClipMethod;
+  // exports.MOUSE = MOUSE;
+  // exports.PointSizeType = PointSizeType;
+  // exports.PointShape = PointShape;
+  // exports.PointColorType = PointColorType;
+  // exports.TreeType = TreeType;
+  // exports.Enum = Enum;
+  // exports.EnumItem = EnumItem;
+  // exports.EventDispatcher = EventDispatcher;
+  // exports.Features = Features;
+  // exports.KeyCodes = KeyCodes;
+  // exports.LRU = LRU;
+  // exports.LRUItem = LRUItem;
+  // exports.PointCloudEptGeometry = PointCloudEptGeometry;
+  // exports.EptKey = EptKey;
+  // exports.PointCloudEptGeometryNode = PointCloudEptGeometryNode;
+  // exports.PointCloudGreyhoundGeometry = PointCloudGreyhoundGeometry;
+  // exports.PointCloudGreyhoundGeometryNode = PointCloudGreyhoundGeometryNode$1;
+  // exports.PointCloudOctreeNode = PointCloudOctreeNode;
+  // exports.PointCloudOctree = PointCloudOctree;
+  // exports.PointCloudOctreeGeometry = PointCloudOctreeGeometry;
+  // exports.PointCloudOctreeGeometryNode = PointCloudOctreeGeometryNode;
+  // exports.PointCloudTreeNode = PointCloudTreeNode;
+  // exports.PointCloudTree = PointCloudTree;
+  // exports.Points = Points;
   exports.updatePointClouds = updatePointClouds;
   exports.updateVisibilityStructures = updateVisibilityStructures;
   exports.updateVisibility = updateVisibility;
-  exports.Renderer = Renderer;
-  exports.ProfileData = ProfileData;
-  exports.ProfileRequest = ProfileRequest;
-  exports.TextSprite = TextSprite;
-  exports.Utils = Utils;
-  exports.Version = Version;
-  exports.WorkerPool = WorkerPool;
-  exports.XHRFactory = XHRFactory;
-  exports.ClassificationScheme = ClassificationScheme;
-  exports.EyeDomeLightingMaterial = EyeDomeLightingMaterial;
-  exports.Gradients = Gradients;
-  exports.NormalizationEDLMaterial = NormalizationEDLMaterial;
-  exports.NormalizationMaterial = NormalizationMaterial;
-  exports.PointCloudMaterial = PointCloudMaterial;
-  exports.POCLoader = POCLoader;
-  exports.EptLoader = EptLoader;
-  exports.EptBinaryLoader = EptBinaryLoader;
-  exports.EptLaszipLoader = EptLaszipLoader;
-  exports.EptLazBatcher = EptLazBatcher;
-  exports.GreyhoundBinaryLoader = GreyhoundBinaryLoader;
-  exports.GreyhoundLoader = GreyhoundLoader;
-  exports.PointAttributeNames = PointAttributeNames;
-  exports.PointAttributeTypes = PointAttributeTypes;
-  exports.PointAttribute = PointAttribute;
-  exports.PointAttributes = PointAttributes;
-  exports.Box3Helper = Box3Helper;
-  exports.ClippingTool = ClippingTool;
-  exports.ClipVolume = ClipVolume;
-  exports.Measure = Measure;
-  exports.MeasuringTool = MeasuringTool;
-  exports.Message = Message;
-  exports.PointCloudSM = PointCloudSM;
-  exports.PolygonClipVolume = PolygonClipVolume;
-  exports.Profile = Profile;
-  exports.ProfileTool = ProfileTool;
-  exports.ScreenBoxSelectTool = ScreenBoxSelectTool;
-  exports.SpotLightHelper = SpotLightHelper;
-  exports.toInterleavedBufferAttribute = toInterleavedBufferAttribute;
-  exports.TransformationTool = TransformationTool;
-  exports.Volume = Volume;
-  exports.BoxVolume = BoxVolume;
-  exports.SphereVolume = SphereVolume;
-  exports.VolumeTool = VolumeTool;
+  // exports.Renderer = Renderer;
+  // exports.ProfileData = ProfileData;
+  // exports.ProfileRequest = ProfileRequest;
+  // exports.TextSprite = TextSprite;
+  // exports.Utils = Utils;
+  // exports.Version = Version;
+  // exports.WorkerPool = WorkerPool;
+  // exports.XHRFactory = XHRFactory;
+  // exports.ClassificationScheme = ClassificationScheme;
+  // exports.EyeDomeLightingMaterial = EyeDomeLightingMaterial;
+  // exports.Gradients = Gradients;
+  // exports.NormalizationEDLMaterial = NormalizationEDLMaterial;
+  // exports.NormalizationMaterial = NormalizationMaterial;
+  // exports.PointCloudMaterial = PointCloudMaterial;
+  // exports.POCLoader = POCLoader;
+  // exports.EptLoader = EptLoader;
+  // exports.EptBinaryLoader = EptBinaryLoader;
+  // exports.EptLaszipLoader = EptLaszipLoader;
+  // exports.EptLazBatcher = EptLazBatcher;
+  // exports.GreyhoundBinaryLoader = GreyhoundBinaryLoader;
+  // exports.GreyhoundLoader = GreyhoundLoader;
+  // exports.PointAttributeNames = PointAttributeNames;
+  // exports.PointAttributeTypes = PointAttributeTypes;
+  // exports.PointAttribute = PointAttribute;
+  // exports.PointAttributes = PointAttributes;
+  // exports.Box3Helper = Box3Helper;
+  // exports.ClippingTool = ClippingTool;
+  // exports.ClipVolume = ClipVolume;
+  // exports.Measure = Measure;
+  // exports.MeasuringTool = MeasuringTool;
+  // exports.Message = Message;
+  // exports.PointCloudSM = PointCloudSM;
+  // exports.PolygonClipVolume = PolygonClipVolume;
+  // exports.Profile = Profile;
+  // exports.ProfileTool = ProfileTool;
+  // exports.ScreenBoxSelectTool = ScreenBoxSelectTool;
+  // exports.SpotLightHelper = SpotLightHelper;
+  // exports.toInterleavedBufferAttribute = toInterleavedBufferAttribute;
+  // exports.TransformationTool = TransformationTool;
+  // exports.Volume = Volume;
+  // exports.BoxVolume = BoxVolume;
+  // exports.SphereVolume = SphereVolume;
+  // exports.VolumeTool = VolumeTool;
   exports.Viewer = Viewer;
-  exports.Scene = Scene;
+  // exports.Scene = Scene;
 
   Object.defineProperty(exports, "__esModule", { value: true });
 });

@@ -12,6 +12,8 @@ import { PointSizeType, PointColorType, ClipTask } from './Presets';
 
 import Shader from './Shader';
 
+import Features from './Features';
+
 import Potree from './potree';
 
 interface renderOctreeParams {
@@ -730,7 +732,7 @@ class Renderer {
         //gl.uniformMatrix4fv(lClipSpheres, false, material.uniforms.clipSpheres.value);
       }
 
-      if (Potree.Features.WEBGL2.isSupported()) {
+      if (Features.WEBGL2.isSupported()) {
         let buffer = new ArrayBuffer(12);
         let bufferf32 = new Float32Array(buffer);
         bufferf32[0] = material.size;

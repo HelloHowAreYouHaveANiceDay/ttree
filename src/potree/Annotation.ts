@@ -123,7 +123,7 @@ export class Annotation extends EventDispatcher {
     this.parent = null;
     this.boundingBox = new THREE.Box3();
 
-    let iconClose =  "/static/icons/close.svg";
+    let iconClose =  "/static/resources/icons/close.svg";
 
     this.domElement = $(`
 			<div class="annotation" oncontextmenu="return false;">

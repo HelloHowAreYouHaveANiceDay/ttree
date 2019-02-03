@@ -32,6 +32,12 @@ import { Camera } from "three";
 import BoxVolume from "./BoxVolume";
 
 import { RepRenderer } from "./Renderers/RepRenderer";
+import HQSplatRenderer from "./Renderers/HQSplatRenderer";
+import EDLRenderer from "./Renderers/EDLRenderer";
+import PotreeRenderer from "./Renderers/PotreeRenderer";
+
+import Features from "./Features";
+import Message from "./Message";
 
 interface Viewer {
   renderArea: HTMLElement;
@@ -75,7 +81,7 @@ interface Viewer {
   potreeRenderer: any;
   edlRenderer: any;
   renderer: any;
-  pRenderer: any;
+  pRenderer: Renderer;
   //scene
   scene: any;
   overlay: any;
@@ -129,6 +135,9 @@ interface Viewer {
   _previousCamera: Camera;
   useRep: boolean;
   repRenderer: RepRenderer;
+  hqRenderer: HQSplatRenderer;
+
+  toggle: number;
 }
 
 interface ViewerArgs {
@@ -137,9 +146,9 @@ interface ViewerArgs {
 }
 
 class Viewer extends EventDispatcher {
+  localPath = "http://localhost:8080/";
   constructor(domElement: HTMLElement, args: ViewerArgs = {}) {
     super();
-
     this.renderArea = domElement;
     this.guiLoaded = false;
     this.guiLoadTasks = [];
@@ -510,7 +519,7 @@ class Viewer extends EventDispatcher {
 
     if (bg === "skybox") {
       this.skybox = Utils.loadSkybox(
-        new URL("/static/resources/textures/skybox2/").href
+        new URL(`${this.localPath}static/resources/textures/skybox2/`).href
       );
     }
 
@@ -1180,21 +1189,21 @@ class Viewer extends EventDispatcher {
     let viewer = this;
     let sidebarContainer = $("#potree_sidebar_container");
     sidebarContainer.load(
-      new URL(Potree.scriptPath + "/sidebar.html").href,
+      new URL(this.localPath + "static/sidebar.html").href,
       () => {
         sidebarContainer.css("width", "300px");
         sidebarContainer.css("height", "100%");
 
         let imgMenuToggle = document.createElement("img");
         imgMenuToggle.src = new URL(
-          Potree.resourcePath + "/icons/menu_button.svg"
+          this.localPath + "static/resources/icons/menu_button.svg"
         ).href;
         imgMenuToggle.onclick = this.toggleSidebar;
         imgMenuToggle.classList.add("potree_menu_toggle");
 
         let imgMapToggle = document.createElement("img");
         imgMapToggle.src = new URL(
-          Potree.resourcePath + "/icons/map_icon.png"
+          this.localPath + "static/resouces/icons/map_icon.png"
         ).href;
         imgMapToggle.style.display = "none";
         imgMapToggle.onclick = e => {
@@ -1240,7 +1249,7 @@ class Viewer extends EventDispatcher {
           //}
 
           let elProfile = $("<div>").load(
-            new URL(Potree.scriptPath + "/profile.html").href,
+            new URL(this.localPath + "static/profile.html").href,
             () => {
               $(document.body).append(elProfile.children());
               this.profileWindow = new ProfileWindow(this);
@@ -1301,7 +1310,7 @@ class Viewer extends EventDispatcher {
     //let context = canvas.getContext('webgl2', contextAttributes );
     //if(!context){
     let context = canvas.getContext("webgl", contextAttributes);
-    Potree.Features.WEBGL2.isSupported = () => {
+    Features.WEBGL2.isSupported = () => {
       return false;
     };
     //}
@@ -1877,6 +1886,7 @@ class Viewer extends EventDispatcher {
           this.hqRenderer = new HQSplatRenderer(this);
         }
         this.hqRenderer.useEDL = this.useEDL;
+        //@ts-ignore
         this.hqRenderer.render(this.renderer);
       } else {
         if (this.useEDL && Features.SHADER_EDL.isSupported()) {
@@ -1984,6 +1994,7 @@ class Viewer extends EventDispatcher {
           if (group.n === 1) {
             group.median = group.measures[0].duration;
           } else if (group.n > 1) {
+            //@ts-ignore
             group.median = group.measures[parseInt(group.n / 2)].duration;
           }
         }
@@ -2003,6 +2014,7 @@ class Viewer extends EventDispatcher {
           ` ${"SAMPLES".padStart(csam)} \n`;
         message += ` ${"-".repeat(message.length)}\n`;
 
+        //@ts-ignore;
         names = Array.from(names).sort();
         for (let name of names) {
           let group = groups.get(name);
@@ -2079,6 +2091,7 @@ class Viewer extends EventDispatcher {
 
     this.messages.push(message);
 
+    //@ts-ignore;
     if (params.duration !== undefined) {
       let fadeDuration = 500;
       let slideOutDuration = 200;
@@ -2090,6 +2103,7 @@ class Viewer extends EventDispatcher {
           fadeDuration
         );
         message.element.slideToggle(slideOutDuration);
+        //@ts-ignore
       }, params.duration);
     }
 

@@ -70,8 +70,8 @@ class BinaryLoader {
       node.numPoints = numPoints;
     }
 
-    // let workerPath = Potree.scriptPath + "/workers/BinaryDecoderWorker.js";
-    let workerPath = "./workers/BinaryDecoderWorker.js";
+    let workerPath = Potree.scriptPath + "/static/workers/BinaryDecoderWorker.js";
+    // let workerPath = "./workers/BinaryDecoderWorker.js";
     let worker = Potree.workerPool.getWorker(workerPath);
 
     worker.onmessage = function(e) {

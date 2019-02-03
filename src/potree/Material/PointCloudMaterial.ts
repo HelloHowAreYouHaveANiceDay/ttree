@@ -1,10 +1,16 @@
 import * as THREE from "three";
-import { PointSizeType, PointShape, PointColorType, TreeType } from "../Presets";
-import ClassificationScheme from '../ClassificationScheme';
-import Potree from '../potree';
+import {
+  PointSizeType,
+  PointShape,
+  PointColorType,
+  TreeType
+} from "../Presets";
+import ClassificationScheme from "../ClassificationScheme";
 import Utils from "../Utils";
-import Gradients from '../Gradients';
-import Shaders from '../Shaders';
+import Gradients from "../Gradients";
+import Shaders from "../Shaders";
+
+import Features from "../Features";
 
 interface PointCloudMaterial {
   visibleNodesTexture: THREE.DataTexture;
@@ -202,10 +208,10 @@ class PointCloudMaterial extends THREE.RawShaderMaterial {
   }
 
   updateShaderSource() {
-    let vs = Potree.Features.WEBGL2.isSupported()
+    let vs = Features.WEBGL2.isSupported()
       ? Shaders["pointcloud.gl2.vs"]
       : Shaders["pointcloud.vs"];
-    let fs = Potree.Features.WEBGL2.isSupported()
+    let fs = Features.WEBGL2.isSupported()
       ? Shaders["pointcloud.gl2.fs"]
       : Shaders["pointcloud.fs"];
     let definesString = this.getDefines();
