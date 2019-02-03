@@ -1,10 +1,10 @@
 import * as THREE from "three";
-import { PointSizeType, PointShape, PointColorType, TreeType } from "./Presets";
-import ClassificationScheme from './ClassificationScheme';
-import Potree from './potree';
-import Utils from "./Utils";
-import Gradients from './Gradients';
-import Shaders from './Shaders';
+import { PointSizeType, PointShape, PointColorType, TreeType } from "../Presets";
+import ClassificationScheme from '../ClassificationScheme';
+import Potree from '../potree';
+import Utils from "../Utils";
+import Gradients from '../Gradients';
+import Shaders from '../Shaders';
 
 interface PointCloudMaterial {
   visibleNodesTexture: THREE.DataTexture;

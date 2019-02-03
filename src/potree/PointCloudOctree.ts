@@ -2,7 +2,7 @@ import * as THREE from "three";
 
 import Potree from "./potree";
 
-import PointCloudMaterial from "./PointCloudMaterial";
+import PointCloudMaterial from "./Material/PointCloudMaterial";
 import PointCloudTree from "./PointCloudTree";
 import PointCloudOctreeNode from "./PointCloudOctreeNode";
 import PointCloudEptGeometry from "./Ept/PointCloudEptGeometry";

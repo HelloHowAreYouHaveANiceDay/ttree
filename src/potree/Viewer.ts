@@ -22,14 +22,16 @@ import Scene from "./Scene";
 import Utils from "./Utils";
 
 import MapView from "./MapView";
-import Sidebar from './Sidebar';
+import Sidebar from "./Sidebar";
 
-import ProfileWindow from './ProfileWindow';
-import ProfileWindowController from './ProfileWindowController';
+import ProfileWindow from "./ProfileWindow";
+import ProfileWindowController from "./ProfileWindowController";
 import { Annotation } from "./Annotation";
 import { Camera } from "three";
 
-import BoxVolume from './BoxVolume';
+import BoxVolume from "./BoxVolume";
+
+import { RepRenderer } from "./Renderers/RepRenderer";
 
 interface Viewer {
   renderArea: HTMLElement;
@@ -123,8 +125,10 @@ interface Viewer {
   profileWindowController: any;
   useHQ?: boolean;
 
-  visibleAnnotations: Set<Annotation>
+  visibleAnnotations: Set<Annotation>;
   _previousCamera: Camera;
+  useRep: boolean;
+  repRenderer: RepRenderer;
 }
 
 interface ViewerArgs {
@@ -1866,6 +1870,7 @@ class Viewer extends EventDispatcher {
         if (!this.repRenderer) {
           this.repRenderer = new RepRenderer(this);
         }
+        //@ts-ignore
         this.repRenderer.render(this.renderer);
       } else if (this.useHQ) {
         if (!this.hqRenderer) {

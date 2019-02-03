@@ -19,6 +19,10 @@ interface MousePointParams {
   y?: number;
 }
 
+interface Utils {
+  screenPass: Function;
+}
+
 class Utils {
   static async loadShapefileFeatures(file, callback) {
     let features = [];
@@ -916,6 +920,5 @@ class Utils {
     }
   }
 }
-
 
 export default Utils;

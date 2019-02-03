@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 import { PointColorType } from "./Presets";
-import PointCloudMaterial from "./PointCloudMaterial";
+import PointCloudMaterial from "./Material/PointCloudMaterial";
 
 interface ProfilePointCloudEntry {
   points: any[];
