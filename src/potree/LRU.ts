@@ -29,6 +29,7 @@ export interface LRU {
   elements: number;
   numPoints: number;
 }
+
 export class LRU {
   constructor() {
     // the least recently used item

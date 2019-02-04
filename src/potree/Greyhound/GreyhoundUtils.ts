@@ -39,7 +39,7 @@ class GreyhoundUtils {
     return schema;
   }
 
-  static fetch(url, cb) {
+  static async fetch(url, cb) {
     let xhr = XHRFactory.createXMLHttpRequest();
     xhr.open("GET", url, true);
     xhr.onreadystatechange = function() {

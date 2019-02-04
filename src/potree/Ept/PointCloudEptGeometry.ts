@@ -1,6 +1,8 @@
-import U from '../U';
-import Potree from '../potree';
-import PointCloudEptGeometryNode from './PointCloudEptGeometryNode';
+import U from "../U";
+import Potree from "../potree";
+import PointCloudEptGeometryNode from "./PointCloudEptGeometryNode";
+import EptBinaryLoader from "./EptBinaryLoader";
+import EptLaszipLoader from "./EptLaszipLoader";
 
 interface PointCloudEptGeometry {
   eptScale: any;
@@ -75,13 +77,11 @@ class PointCloudEptGeometry {
     this.spacing =
       (this.boundingBox.max.x - this.boundingBox.min.x) / this.span;
 
-    let hierarchyType = info.hierarchyType || "json";
+    // let hierarchyType = info.hierarchyType || "json";
 
     let dataType = info.dataType || "laszip";
     this.loader =
-      dataType == "binary"
-        ? new Potree.EptBinaryLoader()
-        : new Potree.EptLaszipLoader();
+      dataType == "binary" ? new EptBinaryLoader() : new EptLaszipLoader();
   }
 }
 

@@ -1,27 +1,26 @@
 import * as THREE from "three";
 
 import PointCloudOctreeGeometry from "../Octree/PointCloudOctreeGeometry";
-import PointCloudOctreeGeometryNode from '../Octree/PointCloudOctreeGeometryNode';
-import PointAttribute from '../PointAttribute';
-import PointAttributes from '../PointAttributes';
+import PointCloudOctreeGeometryNode from "../Octree/PointCloudOctreeGeometryNode";
+import PointAttribute from "../PointAttribute";
+import PointAttributes from "../PointAttributes";
 
-import LasLazLoader from './LasLazLoader';
-import BinaryLoader from './BinaryLoader';
+import LasLazLoader from "./LasLazLoader";
+import BinaryLoader from "./BinaryLoader";
 
 import XHRFactory from "../XHRFactory";
-import Utils from '../Utils';
+import Utils from "../Utils";
 import Version from "../Version";
 
-interface POCLoader {
-
-}
+interface POCLoader {}
 
 class POCLoader {
-  static async load(url) {
+  static async load(url): Promise<PointCloudOctreeGeometry> {
     try {
       let pco = new PointCloudOctreeGeometry();
       pco.url = url;
       let xhr = XHRFactory.createXMLHttpRequest();
+
       xhr.open("GET", url, true);
 
       xhr.onreadystatechange = function() {
@@ -161,7 +160,7 @@ class POCLoader {
     } catch (e) {
       console.log("loading failed: '" + url + "'");
       console.log(e);
-      alert(e);
+      throw e;
       // callback();
     }
   }
