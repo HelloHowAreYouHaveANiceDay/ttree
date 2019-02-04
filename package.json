@@ -4,7 +4,7 @@
   "description": "",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "dev": "webpack-dev-server --open",
     "build": "webpack"
   },
@@ -18,13 +18,16 @@
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.2.0",
     "i": "^0.3.6",
+    "jest": "^24.0.0",
     "jquery": "^3.3.1",
+    "ts-jest": "^23.10.5",
     "webpack": "^4.28.4",
     "webpack-cli": "^3.2.1",
     "webpack-dev-server": "^3.1.14"
   },
   "dependencies": {
     "@types/d3": "^5.7.0",
+    "@types/jest": "^23.3.13",
     "@types/openlayers": "^4.6.15",
     "@types/proj4": "^2.5.0",
     "binary_heap": "^0.9.5",
