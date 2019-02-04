@@ -30,4 +30,17 @@ describe('event dispatcher', () => {
     expect(has1).toEqual(true);
     expect(not1).toEqual(false);
   })
+
+  test('removeEvent', () => {
+    const ED = new EventDispatcher();
+    ED.addEventListener(event1.type, event1.listener);
+    const has1 = ED.hasEventListener(event1.type, event1.listener);
+    expect(has1).toEqual(true);
+    ED.removeEventListener(event1.type, event1.listener);
+    const has1now = ED.hasEventListener(event1.type, event1.listener);
+    expect(has1now).toEqual(false);
+  });
+
+
+  
 })
