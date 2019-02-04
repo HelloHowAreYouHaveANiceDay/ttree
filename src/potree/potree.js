@@ -1,99 +1,41 @@
 import proj4 from "proj4";
-import ol from "openlayers";
-// import i18n from 'jquery-i18next';
-// const i18n = require('i18n');
-import EventDispatcher from "./EventDispatcher";
 import Action from "./Action";
 
 import PathAnimation from "./PathAnimation";
 import AnimationPath from "./AnimationPath";
 
-import XHRFactory from "./XHRFactory";
-import TextSprite from "./TextSprite";
-
 import {
-  CameraMode,
   ClipTask,
   ClipMethod,
-  MOUSE,
   PointSizeType,
-  PointShape,
   PointColorType,
   TreeType
 } from "./Presets";
 
-import Volume from "./Volume";
-import BoxVolume from "./BoxVolume";
-import SphereVolume from "./SphereVolume";
-// import PolygonClipVolume from "./PolygonClipVolume";
-import Measure from "./Measure";
-import { Enum, EnumItem } from "./Enum";
-import Annotation from "./Annotation";
+import { LRU } from "./LRU";
 
-import { LRU, LRUItem } from "./LRU";
-
-import Profile from "./Profile";
 
 import Utils from "./Utils";
 
-import PointCloudTreeNode from "./PointCloudTreeNode";
 import PointCloudTree from "./PointCloudTree";
 
-import EptKey from "./Ept/EptKey";
-import EptLazBatcher from './Ept/EptLazBatcher';
-import EptLoader from "./Ept/EptLoader";
-import EptBinaryLoader from "./Ept/EptBinaryLoader";
-import EptLaszipLoader from "./Ept/EptLaszipLoader";
-import PointCloudEptGeometry from "./Ept/PointCloudEptGeometry";
-import PointCloudEptGeometryNode from "./Ept/PointCloudEptGeometryNode";
-
-import PointCloudGreyhoundGeometry from "./Greyhound/PointCloudGreyhoundGeometry";
 //TODO: Why a dollar sign?
-import PointCloudGreyhoundGeometryNode$1 from "./Greyhound/PointCloudGreyhoundGeometryNode";
 import GreyhoundLoader from "./Greyhound/GreyhoundLoader";
-import GreyhoundBinaryLoader from "./Greyhound/GreyhoundBinaryLoader";
-
-import PointAttributeNames from "./PointAttributeNames";
-import PointAttributeTypes from "./PointAttributeTypes";
 import PointAttribute from "./PointAttribute";
-import PointAttributes from "./PointAttributes";
 
-import Gradients from "./Gradients";
-import Shaders from "./Shaders";
-
-import PointCloudOctreeGeometry from "./Octree/PointCloudOctreeGeometry";
-import PointCloudOctreeGeometryNode from "./Octree/PointCloudOctreeGeometryNode";
-
-import ClassificationScheme from "./ClassificationScheme";
 
 import PointCloudMaterial from "./Material/PointCloudMaterial";
-import PointCloudOctreeNode from "./PointCloudOctreeNode";
 import PointCloudOctree from "./PointCloudOctree";
-
-import Points from "./Points";
 import Box3Helper from "./Box3Helper";
 
 import PointCloudArena4DNode from "./PointCloudArena4DNode";
 
-import Renderer from "./Renderer";
-
-import ProfileData from "./ProfileData";
-import ProfileRequest from "./ProfileRequest";
 
 import WorkerPool from "./WorkerPool";
-import Version from "./Version";
-
-import EyeDomeLightingMaterial from "./Material/EyeDomeLightingMaterial";
-import NormalizationEDLMaterial from "./Material/NormalizationEDLMaterial";
-import NormalizationMaterial from "./Material/NormalizationMaterial";
-
 import POCLoader from "./Loaders/POCLoader";
-
-// import ClipVolume from './ClipVolume';
 
 import Viewer from './Viewer';
 
-// const $ = jQuery;
 
 const Potree = {};
 
@@ -1325,148 +1267,6 @@ const Potree = {};
    * @author Connor Manning
    */
 
-  class SpotLightHelper extends THREE.Object3D {
-    constructor(light, color) {
-      super();
-
-      this.light = light;
-      this.color = color;
-
-      //this.up.set(0, 0, 1);
-      this.updateMatrix();
-      this.updateMatrixWorld();
-
-      {
-        // SPHERE
-        let sg = new THREE.SphereGeometry(1, 32, 32);
-        let sm = new THREE.MeshNormalMaterial();
-        this.sphere = new THREE.Mesh(sg, sm);
-        this.sphere.scale.set(0.5, 0.5, 0.5);
-        this.add(this.sphere);
-      }
-
-      {
-        // LINES
-
-        let positions = new Float32Array([
-          +0,
-          +0,
-          +0,
-          +0,
-          +0,
-          +1,
-
-          +0,
-          +0,
-          +0,
-          -1,
-          -1,
-          +1,
-          +0,
-          +0,
-          +0,
-          +1,
-          -1,
-          +1,
-          +0,
-          +0,
-          +0,
-          +1,
-          +1,
-          +1,
-          +0,
-          +0,
-          +0,
-          -1,
-          +1,
-          +1,
-
-          -1,
-          -1,
-          +1,
-          +1,
-          -1,
-          +1,
-          +1,
-          -1,
-          +1,
-          +1,
-          +1,
-          +1,
-          +1,
-          +1,
-          +1,
-          -1,
-          +1,
-          +1,
-          -1,
-          +1,
-          +1,
-          -1,
-          -1,
-          +1
-        ]);
-
-        let geometry = new THREE.BufferGeometry();
-        geometry.addAttribute(
-          "position",
-          new THREE.BufferAttribute(positions, 3)
-        );
-
-        let material = new THREE.LineBasicMaterial();
-
-        this.frustum = new THREE.LineSegments(geometry, material);
-        this.add(this.frustum);
-      }
-
-      this.update();
-    }
-
-    update() {
-      this.light.updateMatrix();
-      this.light.updateMatrixWorld();
-
-      let position = this.light.position;
-      //let target = new THREE.Vector3().addVectors(
-      //	light.position,
-      //	new THREE.Vector3().subVectors(light.position, this.light.getWorldDirection(new THREE.Vector3())));
-      let target = new THREE.Vector3().addVectors(
-        light.position,
-        this.light.getWorldDirection(new THREE.Vector3()).multiplyScalar(-1)
-      );
-
-      let quat = new THREE.Quaternion().setFromRotationMatrix(
-        new THREE.Matrix4().lookAt(position, target, new THREE.Vector3(0, 0, 1))
-      );
-
-      this.setRotationFromQuaternion(quat);
-      this.position.copy(position);
-
-      let coneLength = this.light.distance > 0 ? this.light.distance : 1000;
-      let coneWidth = coneLength * Math.tan(this.light.angle * 0.5);
-
-      this.frustum.scale.set(coneWidth, coneWidth, coneLength);
-
-      //{
-      //	let fov = (180 * light.angle) / Math.PI;
-      //	let aspect = light.shadow.mapSize.width / light.shadow.mapSize.height;
-      //	let near = 0.1;
-      //	let far = light.distance === 0 ? 10000 : light.distance;
-      //	this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-      //	this.camera.up.set(0, 0, 1);
-      //	this.camera.position.copy(light.position);
-
-      //	let target = new THREE.Vector3().addVectors(light.position, light.getWorldDirection(new THREE.Vector3()));
-      //	this.camera.lookAt(target);
-
-      //	this.camera.updateProjectionMatrix();
-      //	this.camera.updateMatrix();
-      //	this.camera.updateMatrixWorld();
-      //	this.camera.matrixWorldInverse.getInverse(this.camera.matrixWorld);
-      //}
-    }
-  }
-
   function toInterleavedBufferAttribute(pointAttribute) {
     let att = null;
 
@@ -1814,87 +1614,14 @@ const Potree = {};
   exports.numNodesLoading = numNodesLoading;
   exports.maxNodesLoading = maxNodesLoading;
   exports.debug = debug;
-  // exports.resourcePath = resourcePath;
   exports.loadPointCloud = loadPointCloud;
   exports.Action = Action;
   exports.PathAnimation = PathAnimation;
   exports.AnimationPath = AnimationPath;
-  // exports.Annotation = Annotation;
-  // exports.CameraMode = CameraMode;
-  // exports.ClipTask = ClipTask;
-  // exports.ClipMethod = ClipMethod;
-  // exports.MOUSE = MOUSE;
-  // exports.PointSizeType = PointSizeType;
-  // exports.PointShape = PointShape;
-  // exports.PointColorType = PointColorType;
-  // exports.TreeType = TreeType;
-  // exports.Enum = Enum;
-  // exports.EnumItem = EnumItem;
-  // exports.EventDispatcher = EventDispatcher;
-  // exports.Features = Features;
-  // exports.KeyCodes = KeyCodes;
-  // exports.LRU = LRU;
-  // exports.LRUItem = LRUItem;
-  // exports.PointCloudEptGeometry = PointCloudEptGeometry;
-  // exports.EptKey = EptKey;
-  // exports.PointCloudEptGeometryNode = PointCloudEptGeometryNode;
-  // exports.PointCloudGreyhoundGeometry = PointCloudGreyhoundGeometry;
-  // exports.PointCloudGreyhoundGeometryNode = PointCloudGreyhoundGeometryNode$1;
-  // exports.PointCloudOctreeNode = PointCloudOctreeNode;
-  // exports.PointCloudOctree = PointCloudOctree;
-  // exports.PointCloudOctreeGeometry = PointCloudOctreeGeometry;
-  // exports.PointCloudOctreeGeometryNode = PointCloudOctreeGeometryNode;
-  // exports.PointCloudTreeNode = PointCloudTreeNode;
-  // exports.PointCloudTree = PointCloudTree;
-  // exports.Points = Points;
   exports.updatePointClouds = updatePointClouds;
   exports.updateVisibilityStructures = updateVisibilityStructures;
   exports.updateVisibility = updateVisibility;
-  // exports.Renderer = Renderer;
-  // exports.ProfileData = ProfileData;
-  // exports.ProfileRequest = ProfileRequest;
-  // exports.TextSprite = TextSprite;
-  // exports.Utils = Utils;
-  // exports.Version = Version;
-  // exports.WorkerPool = WorkerPool;
-  // exports.XHRFactory = XHRFactory;
-  // exports.ClassificationScheme = ClassificationScheme;
-  // exports.EyeDomeLightingMaterial = EyeDomeLightingMaterial;
-  // exports.Gradients = Gradients;
-  // exports.NormalizationEDLMaterial = NormalizationEDLMaterial;
-  // exports.NormalizationMaterial = NormalizationMaterial;
-  // exports.PointCloudMaterial = PointCloudMaterial;
-  // exports.POCLoader = POCLoader;
-  // exports.EptLoader = EptLoader;
-  // exports.EptBinaryLoader = EptBinaryLoader;
-  // exports.EptLaszipLoader = EptLaszipLoader;
-  // exports.EptLazBatcher = EptLazBatcher;
-  // exports.GreyhoundBinaryLoader = GreyhoundBinaryLoader;
-  // exports.GreyhoundLoader = GreyhoundLoader;
-  // exports.PointAttributeNames = PointAttributeNames;
-  // exports.PointAttributeTypes = PointAttributeTypes;
-  // exports.PointAttribute = PointAttribute;
-  // exports.PointAttributes = PointAttributes;
-  // exports.Box3Helper = Box3Helper;
-  // exports.ClippingTool = ClippingTool;
-  // exports.ClipVolume = ClipVolume;
-  // exports.Measure = Measure;
-  // exports.MeasuringTool = MeasuringTool;
-  // exports.Message = Message;
-  // exports.PointCloudSM = PointCloudSM;
-  // exports.PolygonClipVolume = PolygonClipVolume;
-  // exports.Profile = Profile;
-  // exports.ProfileTool = ProfileTool;
-  // exports.ScreenBoxSelectTool = ScreenBoxSelectTool;
-  // exports.SpotLightHelper = SpotLightHelper;
-  // exports.toInterleavedBufferAttribute = toInterleavedBufferAttribute;
-  // exports.TransformationTool = TransformationTool;
-  // exports.Volume = Volume;
-  // exports.BoxVolume = BoxVolume;
-  // exports.SphereVolume = SphereVolume;
-  // exports.VolumeTool = VolumeTool;
   exports.Viewer = Viewer;
-  // exports.Scene = Scene;
 
   Object.defineProperty(exports, "__esModule", { value: true });
 });

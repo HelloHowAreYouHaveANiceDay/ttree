@@ -6,13 +6,13 @@ import PointCloudEptGeometryNode from "./PointCloudEptGeometryNode";
  */
 
 class EptLoader {
-  static async load(file, callback) {
-    let response = await fetch(file);
-    let json = await response.json();
+  static async load(file) {
+    const response = await fetch(file);
+    const json = await response.json();
 
-    let url = file.substr(0, file.lastIndexOf("ept.json"));
-    let geometry = new PointCloudEptGeometry(url, json);
-    let root = new PointCloudEptGeometryNode(
+    const url = file.substr(0, file.lastIndexOf("ept.json"));
+    const geometry = new PointCloudEptGeometry(url, json);
+    const root = new PointCloudEptGeometryNode(
       geometry,
       null,
       0,
@@ -24,6 +24,8 @@ class EptLoader {
     geometry.root = root;
     geometry.root.load();
 
-    callback(geometry);
+    return geometry;
   }
 }
+
+export default EptLoader

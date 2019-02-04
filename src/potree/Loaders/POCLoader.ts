@@ -17,7 +17,7 @@ interface POCLoader {
 }
 
 class POCLoader {
-  static load(url, callback) {
+  static async load(url) {
     try {
       let pco = new PointCloudOctreeGeometry();
       pco.url = url;
@@ -153,7 +153,7 @@ class POCLoader {
 
           pco.nodes = nodes;
 
-          callback(pco);
+          return pco;
         }
       };
 
@@ -161,8 +161,8 @@ class POCLoader {
     } catch (e) {
       console.log("loading failed: '" + url + "'");
       console.log(e);
-
-      callback();
+      alert(e);
+      // callback();
     }
   }
 

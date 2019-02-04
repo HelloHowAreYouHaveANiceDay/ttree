@@ -40,7 +40,7 @@ interface PointCloudOctree {
 class PointCloudOctree extends PointCloudTree {
   constructor(
     geometry: PointCloudGreyhoundGeometry | PointCloudEptGeometry,
-    material: PointCloudMaterial
+    material?: PointCloudMaterial
   ) {
     super();
 

@@ -1,16 +1,16 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 
-import Version from '../Version';
+import Version from "../Version";
 
-import PointAttribute from '../PointAttribute';
-import PointAttributes from '../PointAttributes';
+import PointAttribute from "../PointAttribute";
+import PointAttributes from "../PointAttributes";
 
-import GreyhoundUtils from './GreyhoundUtils';
+import GreyhoundUtils from "./GreyhoundUtils";
 
-import PointCloudGreyhoundGeometry from './PointCloudGreyhoundGeometry';
-import PointCloudGreyhoundGeometryNode$1 from './PointCloudGreyhoundGeometryNode';
+import PointCloudGreyhoundGeometry from "./PointCloudGreyhoundGeometry";
+import PointCloudGreyhoundGeometryNode$1 from "./PointCloudGreyhoundGeometryNode";
 
-import GreyhoundBinaryLoader from './GreyhoundBinaryLoader';
+import GreyhoundBinaryLoader from "./GreyhoundBinaryLoader";
 
 const PointCloudGreyhoundGeometryNode = PointCloudGreyhoundGeometryNode$1;
 
@@ -24,31 +24,23 @@ class GreyhoundLoader {
   //loadInfoJSON(url, callback) {
   //}
 
-  /**
-   * @return a point cloud octree with the root node data loaded.
-   * loading of descendants happens asynchronously when they're needed
-   *
-   * @param url
-   * @param loadingFinishedListener executed after loading the binary has been
-   * finished
-   */
-  static load(url: string, callback) {
+  static load = async (url: string): Promise<PointCloudGreyhoundGeometry> => {
     let HIERARCHY_STEP_SIZE = 5;
 
-    try {
-      // We assume everything ater the string 'greyhound://' is the server url
-      let serverURL = url.split("greyhound://")[1];
-      if (
-        serverURL.split("http://").length === 1 &&
-        serverURL.split("https://").length === 1
-      ) {
-        serverURL = "http://" + serverURL;
-      }
+    // try {
+    // We assume everything ater the string 'greyhound://' is the server url
+    let serverURL = url.split("greyhound://")[1];
+    if (
+      serverURL.split("http://").length === 1 &&
+      serverURL.split("https://").length === 1
+    ) {
+      serverURL = "http://" + serverURL;
+    }
 
-      GreyhoundUtils.fetch(serverURL + "info", function(err, data) {
-        if (err) throw new Error(err);
+    GreyhoundUtils.fetch(serverURL + "info", function(err, data) {
+      if (err) throw new Error(err);
 
-        /* We parse the result of the info query, which should be a JSON
+      /* We parse the result of the info query, which should be a JSON
 					* datastructure somewhat like:
 					{
 						"bounds": [635577, 848882, -1000, 639004, 853538, 2000],
@@ -67,141 +59,142 @@ class GreyhoundLoader {
 						"type": "octree"
 					}
 					*/
-        let greyhoundInfo = JSON.parse(data);
-        let version = new Version("1.4");
+      let greyhoundInfo = JSON.parse(data);
+      let version = new Version("1.4");
 
-        let bounds = greyhoundInfo.bounds;
-        // TODO Unused: let boundsConforming = greyhoundInfo.boundsConforming;
+      let bounds = greyhoundInfo.bounds;
+      // TODO Unused: let boundsConforming = greyhoundInfo.boundsConforming;
 
-        // TODO Unused: let width = bounds[3] - bounds[0];
-        // TODO Unused: let depth = bounds[4] - bounds[1];
-        // TODO Unused: let height = bounds[5] - bounds[2];
-        // TODO Unused: let radius = width / 2;
-        let scale = greyhoundInfo.scale || 0.01;
-        if (Array.isArray(scale)) {
-          scale = Math.min(scale[0], scale[1], scale[2]);
+      // TODO Unused: let width = bounds[3] - bounds[0];
+      // TODO Unused: let depth = bounds[4] - bounds[1];
+      // TODO Unused: let height = bounds[5] - bounds[2];
+      // TODO Unused: let radius = width / 2;
+      let scale = greyhoundInfo.scale || 0.01;
+      if (Array.isArray(scale)) {
+        scale = Math.min(scale[0], scale[1], scale[2]);
+      }
+
+      if (GreyhoundUtils.getQueryParam("scale")) {
+        scale = parseFloat(GreyhoundUtils.getQueryParam("scale"));
+      }
+
+      let baseDepth = Math.max(8, greyhoundInfo.baseDepth);
+
+      // Ideally we want to change this bit completely, since
+      // greyhound's options are wider than the default options for
+      // visualizing pointclouds. If someone ever has time to build a
+      // custom ui element for greyhound, the schema options from
+      // this info request should be given to the UI, so the user can
+      // choose between them. The selected option can then be
+      // directly requested from the server in the
+      // PointCloudGreyhoundGeometryNode without asking for
+      // attributes that we are not currently visualizing.  We assume
+      // XYZ are always available.
+      let attributes = ["POSITION_CARTESIAN"];
+
+      // To be careful, we only add COLOR_PACKED as an option if all
+      // colors are actually found.
+      let red = false;
+      let green = false;
+      let blue = false;
+
+      greyhoundInfo.schema.forEach(function(entry) {
+        // Intensity and Classification are optional.
+        if (entry.name === "Intensity") {
+          attributes.push("INTENSITY");
+        }
+        if (entry.name === "Classification") {
+          attributes.push("CLASSIFICATION");
         }
 
-        if (GreyhoundUtils.getQueryParam("scale")) {
-          scale = parseFloat(GreyhoundUtils.getQueryParam("scale"));
-        }
-
-        let baseDepth = Math.max(8, greyhoundInfo.baseDepth);
-
-        // Ideally we want to change this bit completely, since
-        // greyhound's options are wider than the default options for
-        // visualizing pointclouds. If someone ever has time to build a
-        // custom ui element for greyhound, the schema options from
-        // this info request should be given to the UI, so the user can
-        // choose between them. The selected option can then be
-        // directly requested from the server in the
-        // PointCloudGreyhoundGeometryNode without asking for
-        // attributes that we are not currently visualizing.  We assume
-        // XYZ are always available.
-        let attributes = ["POSITION_CARTESIAN"];
-
-        // To be careful, we only add COLOR_PACKED as an option if all
-        // colors are actually found.
-        let red = false;
-        let green = false;
-        let blue = false;
-
-        greyhoundInfo.schema.forEach(function(entry) {
-          // Intensity and Classification are optional.
-          if (entry.name === "Intensity") {
-            attributes.push("INTENSITY");
-          }
-          if (entry.name === "Classification") {
-            attributes.push("CLASSIFICATION");
-          }
-
-          if (entry.name === "Red") red = true;
-          else if (entry.name === "Green") green = true;
-          else if (entry.name === "Blue") blue = true;
-        });
-
-        if (red && green && blue) attributes.push("COLOR_PACKED");
-
-        // Fill in geometry fields.
-        let pgg = new PointCloudGreyhoundGeometry();
-        pgg.serverURL = serverURL;
-        pgg.spacing = (bounds[3] - bounds[0]) / Math.pow(2, baseDepth);
-        pgg.baseDepth = baseDepth;
-        pgg.hierarchyStepSize = HIERARCHY_STEP_SIZE;
-
-        pgg.schema = GreyhoundUtils.createSchema(attributes);
-        let pointSize = GreyhoundUtils.pointSizeFrom(pgg.schema);
-
-        pgg.pointAttributes = new PointAttributes(attributes);
-        //TODO: typing error. Point Attributes has byteSize but cannot assign here;
-        //@ts-ignore
-        pgg.pointAttributes.byteSize = pointSize;
-
-        let boundingBox = new THREE.Box3(
-          new THREE.Vector3().fromArray(bounds, 0),
-          new THREE.Vector3().fromArray(bounds, 3)
-        );
-
-        let offset = boundingBox.min.clone();
-
-        boundingBox.max.sub(boundingBox.min);
-        boundingBox.min.set(0, 0, 0);
-
-        pgg.projection = greyhoundInfo.srs;
-        pgg.boundingBox = boundingBox;
-        pgg.boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
-
-        pgg.scale = scale;
-        pgg.offset = offset;
-
-        console.log("Scale:", scale);
-        console.log("Offset:", offset);
-        console.log("Bounds:", boundingBox);
-
-        pgg.loader = new GreyhoundBinaryLoader(version, boundingBox, pgg.scale);
-
-        let nodes = {};
-
-        {
-          // load root
-          let name = "r";
-
-          let root = new PointCloudGreyhoundGeometryNode(
-            name,
-            pgg,
-            boundingBox,
-            scale,
-            offset
-          );
-
-          root.level = 0;
-          root.hasChildren = true;
-          root.numPoints = greyhoundInfo.numPoints;
-          root.spacing = pgg.spacing;
-          pgg.root = root;
-          pgg.root.load();
-          nodes[name] = root;
-        }
-
-        pgg.nodes = nodes;
-
-        GreyhoundUtils.getNormalization(
-          serverURL,
-          greyhoundInfo.baseDepth,
-          function(_, normalize) {
-            if (normalize.color) pgg.normalize.color = true;
-            if (normalize.intensity) pgg.normalize.intensity = true;
-
-            callback(pgg);
-          }
-        );
+        if (entry.name === "Red") red = true;
+        else if (entry.name === "Green") green = true;
+        else if (entry.name === "Blue") blue = true;
       });
-    } catch (e) {
-      console.log("loading failed: '" + url + "'");
-      console.log(e);
 
-      callback();
-    }
+      if (red && green && blue) attributes.push("COLOR_PACKED");
+
+      // Fill in geometry fields.
+      const pgg = new PointCloudGreyhoundGeometry();
+      pgg.serverURL = serverURL;
+      pgg.spacing = (bounds[3] - bounds[0]) / Math.pow(2, baseDepth);
+
+      pgg.hierarchyStepSize = HIERARCHY_STEP_SIZE;
+
+      pgg.schema = GreyhoundUtils.createSchema(attributes);
+      let pointSize = GreyhoundUtils.pointSizeFrom(pgg.schema);
+
+      pgg.pointAttributes = new PointAttributes(attributes);
+      //TODO: typing error. Point Attributes has byteSize but cannot assign here;
+      //@ts-ignore
+      pgg.pointAttributes.byteSize = pointSize;
+
+      let boundingBox = new THREE.Box3(
+        new THREE.Vector3().fromArray(bounds, 0),
+        new THREE.Vector3().fromArray(bounds, 3)
+      );
+
+      let offset = boundingBox.min.clone();
+
+      boundingBox.max.sub(boundingBox.min);
+      boundingBox.min.set(0, 0, 0);
+
+      pgg.projection = greyhoundInfo.srs;
+      pgg.boundingBox = boundingBox;
+      pgg.boundingSphere = boundingBox.getBoundingSphere(new THREE.Sphere());
+
+      pgg.scale = scale;
+      pgg.offset = offset;
+
+      console.log("Scale:", scale);
+      console.log("Offset:", offset);
+      console.log("Bounds:", boundingBox);
+
+      pgg.loader = new GreyhoundBinaryLoader(version, boundingBox, pgg.scale);
+
+      let nodes = {};
+
+      {
+        // load root
+        let name = "r";
+
+        let root = new PointCloudGreyhoundGeometryNode(
+          name,
+          pgg,
+          boundingBox,
+          scale,
+          offset
+        );
+
+        root.level = 0;
+        root.hasChildren = true;
+        root.numPoints = greyhoundInfo.numPoints;
+        root.spacing = pgg.spacing;
+        pgg.root = root;
+        pgg.root.load();
+        nodes[name] = root;
+      }
+
+      pgg.nodes = nodes;
+
+      GreyhoundUtils.getNormalization(
+        serverURL,
+        greyhoundInfo.baseDepth,
+        function(_, normalize) {
+          if (normalize.color) pgg.normalize.color = true;
+          if (normalize.intensity) pgg.normalize.intensity = true;
+
+          return pgg;
+        }
+      );
+    });
+    // } catch (e) {
+    //   console.log("loading failed: '" + url + "'");
+    //   console.log(e);
+    //   alert(e);
+    //   // callback();
+    //   // return;
+    // }
   }
 
   loadPointAttributes(mno) {
