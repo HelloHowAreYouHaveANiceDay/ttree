@@ -1,17 +1,17 @@
-import tCamera from "./tCamera";
+import tCamera from './tCamera';
 
-import EptLoader from "../potree/Ept/EptLoader";
-import PointCloudOctree from "../potree/PointCloudOctree";
-import GreyhoundLoader from "../potree/Greyhound/GreyhoundLoader";
+import EptLoader from '../potree/Ept/EptLoader';
+import PointCloudOctree from '../potree/PointCloudOctree';
+import GreyhoundLoader from '../potree/Greyhound/GreyhoundLoader';
 // import PointCloudArena4D from '../potree/Point'
 
-import POCLoader from "../potree/Loaders/POCLoader";
-import { LRU } from "../potree/LRU";
+import POCLoader from '../potree/Loaders/POCLoader';
+import { LRU } from '../potree/LRU';
 
-const isEPT = (url: string) => url.includes("ept.json");
-const isGreyhound = (url: string) => url.includes("greyhound://");
-const isPOC = (url: string) => url.includes("cloud.js");
-const isArena4D = (url: string) => url.includes(".vps");
+const isEPT = (url: string) => url.includes('ept.json');
+const isGreyhound = (url: string) => url.includes('greyhound://');
+const isPOC = (url: string) => url.includes('cloud.js');
+const isArena4D = (url: string) => url.includes('.vps');
 
 interface TTree {
   lru: LRU;
@@ -22,7 +22,11 @@ class TTree {
     this.lru = new LRU();
   }
 
-  updatePointClouds(pointclouds: PointCloudOctree[], camera: tCamera, renderer) {
+  updatePointClouds(
+    pointclouds: PointCloudOctree[],
+    camera: tCamera,
+    renderer
+  ) {
     for (let pointcloud of pointclouds) {
       // timestamp
       let start = performance.now();
@@ -31,12 +35,10 @@ class TTree {
         profileRequest.update();
 
         let duration = performance.now() - start;
-        if(duration > 5) {
+        if (duration > 5) {
           break;
         }
       }
-
-
     }
 
     const result = this.updateVisiblity(pointclouds, camera, renderer);
@@ -77,7 +79,7 @@ class TTree {
       } else if (isArena4D(path)) {
         // const geometry = await PointCloudArena4DGeometry.load(path)
         // return new PointCloudArena4D(geometry);
-        console.log("arena 4D not implemented");
+        console.log('arena 4D not implemented');
       } else {
       }
     } catch (err) {

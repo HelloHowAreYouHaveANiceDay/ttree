@@ -1,8 +1,8 @@
-import proj4 from "proj4";
-import Action from "./Action";
+import proj4 from 'proj4';
+import Action from './Action';
 
-import PathAnimation from "./PathAnimation";
-import AnimationPath from "./AnimationPath";
+import PathAnimation from './PathAnimation';
+import AnimationPath from './AnimationPath';
 
 import {
   ClipTask,
@@ -10,32 +10,28 @@ import {
   PointSizeType,
   PointColorType,
   TreeType
-} from "./Presets";
+} from './Presets';
 
-import { LRU } from "./LRU";
+import { LRU } from './LRU';
 
+import Utils from './Utils';
 
-import Utils from "./Utils";
-
-import PointCloudTree from "./PointCloudTree";
+import PointCloudTree from './PointCloudTree';
 
 //TODO: Why a dollar sign?
-import GreyhoundLoader from "./Greyhound/GreyhoundLoader";
-import PointAttribute from "./PointAttribute";
+import GreyhoundLoader from './Greyhound/GreyhoundLoader';
+import PointAttribute from './PointAttribute';
 
+import PointCloudMaterial from './Material/PointCloudMaterial';
+import PointCloudOctree from './PointCloudOctree';
+import Box3Helper from './Box3Helper';
 
-import PointCloudMaterial from "./Material/PointCloudMaterial";
-import PointCloudOctree from "./PointCloudOctree";
-import Box3Helper from "./Box3Helper";
+import PointCloudArena4DNode from './PointCloudArena4DNode';
 
-import PointCloudArena4DNode from "./PointCloudArena4DNode";
-
-
-import WorkerPool from "./WorkerPool";
-import POCLoader from "./Loaders/POCLoader";
+import WorkerPool from './WorkerPool';
+import POCLoader from './Loaders/POCLoader';
 
 import Viewer from './Viewer';
-
 
 const Potree = {};
 
@@ -161,7 +157,7 @@ const Potree = {};
     this.render = function(renderer, material, target) {
       this.screenQuad.material = material;
 
-      if (typeof target === "undefined") {
+      if (typeof target === 'undefined') {
         renderer.render(this.screenScene, this.camera);
       } else {
         renderer.render(this.screenScene, this.camera, target);
@@ -344,7 +340,7 @@ const Potree = {};
           version.transform.copy(pointcloud.matrixWorld);
 
           pointcloud.dispatchEvent({
-            type: "transformation_changed",
+            type: 'transformation_changed',
             target: pointcloud
           });
         }
@@ -385,7 +381,7 @@ const Potree = {};
       //visible = visible && node.name !== "r613";
 
       if (!window.warned125) {
-        console.log("TODO");
+        console.log('TODO');
         window.warned125 = true;
       }
 
@@ -680,7 +676,7 @@ const Potree = {};
       if (geometry.root) {
         this.root = geometry.root;
       } else {
-        geometry.addEventListener("hierarchy_loaded", () => {
+        geometry.addEventListener('hierarchy_loaded', () => {
           this.root = geometry.root;
         });
       }
@@ -709,7 +705,7 @@ const Potree = {};
       this.material.sizeType = PointSizeType.ATTENUATED;
       this.material.size = 0.05;
       this.profileRequests = [];
-      this.name = "";
+      this.name = '';
     }
 
     getBoundingBoxWorld() {
@@ -725,7 +721,7 @@ const Potree = {};
       if (this.name !== name) {
         this.name = name;
         this.dispatchEvent({
-          type: "name_changed",
+          type: 'name_changed',
           name: name,
           pointcloud: this
         });
@@ -914,7 +910,7 @@ const Potree = {};
       let renderer = viewer.renderer;
       let pRenderer = viewer.pRenderer;
 
-      performance.mark("pick-start");
+      performance.mark('pick-start');
 
       let getVal = (a, b) => (a !== undefined ? a : b);
 
@@ -1098,7 +1094,7 @@ const Potree = {};
         for (let attributeName in geometry.attributes) {
           let attribute = geometry.attributes[attributeName];
 
-          if (attributeName === "position") {
+          if (attributeName === 'position') {
             let x = attribute.array[3 * hit.pIndex + 0];
             let y = attribute.array[3 * hit.pIndex + 1];
             let z = attribute.array[3 * hit.pIndex + 2];
@@ -1107,7 +1103,7 @@ const Potree = {};
             position.applyMatrix4(pc.matrixWorld);
 
             point[attributeName] = position;
-          } else if (attributeName === "indices") {
+          } else if (attributeName === 'indices') {
           } else {
             //if (values.itemSize === 1) {
             //	point[attribute.name] = values.array[hit.pIndex];
@@ -1124,8 +1120,8 @@ const Potree = {};
         hit.point = point;
       }
 
-      performance.mark("pick-end");
-      performance.measure("pick", "pick-start", "pick-end");
+      performance.mark('pick-end');
+      performance.measure('pick', 'pick-start', 'pick-end');
 
       if (params.all) {
         return hits.map(hit => hit.point);
@@ -1140,7 +1136,7 @@ const Potree = {};
 
     computeVisibilityTextureData(nodes) {
       if (exports.measureTimings)
-        performance.mark("computeVisibilityTextureData-start");
+        performance.mark('computeVisibilityTextureData-start');
 
       let data = new Uint8Array(nodes.length * 3);
       let visibleNodeTextureOffsets = new Map();
@@ -1193,11 +1189,11 @@ const Potree = {};
               : b2;
         }
 
-        if (node.geometryNode.split === "X") {
+        if (node.geometryNode.split === 'X') {
           b3 = 1;
-        } else if (node.geometryNode.split === "Y") {
+        } else if (node.geometryNode.split === 'Y') {
           b3 = 2;
-        } else if (node.geometryNode.split === "Z") {
+        } else if (node.geometryNode.split === 'Z') {
           b3 = 4;
         }
 
@@ -1207,11 +1203,11 @@ const Potree = {};
       }
 
       if (exports.measureTimings) {
-        performance.mark("computeVisibilityTextureData-end");
+        performance.mark('computeVisibilityTextureData-end');
         performance.measure(
-          "render.computeVisibilityTextureData",
-          "computeVisibilityTextureData-start",
-          "computeVisibilityTextureData-end"
+          'render.computeVisibilityTextureData',
+          'computeVisibilityTextureData-start',
+          'computeVisibilityTextureData-end'
         );
       }
 
@@ -1272,84 +1268,84 @@ const Potree = {};
 
     if (pointAttribute.name === PointAttribute.POSITION_CARTESIAN.name) {
       att = new Potree.InterleavedBufferAttribute(
-        "position",
+        'position',
         12,
         3,
-        "FLOAT",
+        'FLOAT',
         false
       );
     } else if (pointAttribute.name === PointAttribute.COLOR_PACKED.name) {
       att = new Potree.InterleavedBufferAttribute(
-        "color",
+        'color',
         4,
         4,
-        "UNSIGNED_BYTE",
+        'UNSIGNED_BYTE',
         true
       );
     } else if (pointAttribute.name === PointAttribute.INTENSITY.name) {
       att = new Potree.InterleavedBufferAttribute(
-        "intensity",
+        'intensity',
         4,
         1,
-        "FLOAT",
+        'FLOAT',
         false
       );
     } else if (pointAttribute.name === PointAttribute.CLASSIFICATION.name) {
       att = new Potree.InterleavedBufferAttribute(
-        "classification",
+        'classification',
         4,
         1,
-        "FLOAT",
+        'FLOAT',
         false
       );
     } else if (pointAttribute.name === PointAttribute.RETURN_NUMBER.name) {
       att = new Potree.InterleavedBufferAttribute(
-        "returnNumber",
+        'returnNumber',
         4,
         1,
-        "FLOAT",
+        'FLOAT',
         false
       );
     } else if (pointAttribute.name === PointAttribute.NUMBER_OF_RETURNS.name) {
       att = new Potree.InterleavedBufferAttribute(
-        "numberOfReturns",
+        'numberOfReturns',
         4,
         1,
-        "FLOAT",
+        'FLOAT',
         false
       );
     } else if (pointAttribute.name === PointAttribute.SOURCE_ID.name) {
       att = new Potree.InterleavedBufferAttribute(
-        "pointSourceID",
+        'pointSourceID',
         4,
         1,
-        "FLOAT",
+        'FLOAT',
         false
       );
     } else if (
       pointAttribute.name === PointAttribute.NORMAL_SPHEREMAPPED.name
     ) {
       att = new Potree.InterleavedBufferAttribute(
-        "normal",
+        'normal',
         12,
         3,
-        "FLOAT",
+        'FLOAT',
         false
       );
     } else if (pointAttribute.name === PointAttribute.NORMAL_OCT16.name) {
       att = new Potree.InterleavedBufferAttribute(
-        "normal",
+        'normal',
         12,
         3,
-        "FLOAT",
+        'FLOAT',
         false
       );
     } else if (pointAttribute.name === PointAttribute.NORMAL.name) {
       att = new Potree.InterleavedBufferAttribute(
-        "normal",
+        'normal',
         12,
         3,
-        "FLOAT",
+        'FLOAT',
         false
       );
     }
@@ -1357,11 +1353,10 @@ const Potree = {};
     return att;
   }
 
-
   // http://epsg.io/
   proj4.defs(
-    "UTM10N",
-    "+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
+    'UTM10N',
+    '+proj=utm +zone=10 +ellps=GRS80 +datum=NAD83 +units=m +no_defs'
   );
 
   THREE.OrthographicCamera.prototype.zoomTo = function(node, factor = 1) {
@@ -1441,12 +1436,12 @@ const Potree = {};
   const version = {
     major: 1,
     minor: 6,
-    suffix: ""
+    suffix: ''
   };
 
   let lru = new LRU();
 
-  console.log("Potree " + version.major + "." + version.minor + version.suffix);
+  console.log('Potree ' + version.major + '.' + version.minor + version.suffix);
 
   let pointBudget = 1 * 1000 * 1000;
   let framenumber = 0;
@@ -1455,33 +1450,32 @@ const Potree = {};
 
   const debug = {};
 
-
   // gets the path of the current script for static asset imports
-  exports.scriptPath = "";
+  exports.scriptPath = '';
   if (document.currentScript.src) {
-    exports.scriptPath = new URL(document.currentScript.src + "/..").href;
-    if (exports.scriptPath.slice(-1) === "/") {
+    exports.scriptPath = new URL(document.currentScript.src + '/..').href;
+    if (exports.scriptPath.slice(-1) === '/') {
       exports.scriptPath = exports.scriptPath.slice(0, -1);
     }
     console.log('script path', exports.scriptPath);
   } else {
     console.error(
-      "Potree was unable to find its script path using document.currentScript. Is Potree included with a script tag? Does your browser support this function?"
+      'Potree was unable to find its script path using document.currentScript. Is Potree included with a script tag? Does your browser support this function?'
     );
   }
 
-  let resourcePath = exports.scriptPath + "/static/resources";
+  let resourcePath = exports.scriptPath + '/static/resources';
 
   function loadPointCloud(path, name, callback) {
     let loaded = function(pointcloud) {
       pointcloud.name = name;
-      callback({ type: "pointcloud_loaded", pointcloud: pointcloud });
+      callback({ type: 'pointcloud_loaded', pointcloud: pointcloud });
     };
 
     // load pointcloud
     if (!path) {
       // TODO: callback? comment? Hello? Bueller? Anyone?
-    } else if (path.indexOf("ept.json") > 0) {
+    } else if (path.indexOf('ept.json') > 0) {
       Potree.EptLoader.load(path, function(geometry) {
         if (!geometry) {
           console.error(
@@ -1492,7 +1486,7 @@ const Potree = {};
           loaded(pointcloud);
         }
       });
-    } else if (path.indexOf("greyhound://") === 0) {
+    } else if (path.indexOf('greyhound://') === 0) {
       // We check if the path string starts with 'greyhound:', if so we assume it's a greyhound server URL.
       GreyhoundLoader.load(path, function(geometry) {
         if (!geometry) {
@@ -1505,7 +1499,7 @@ const Potree = {};
           loaded(pointcloud);
         }
       });
-    } else if (path.indexOf("cloud.js") > 0) {
+    } else if (path.indexOf('cloud.js') > 0) {
       POCLoader.load(path, function(geometry) {
         if (!geometry) {
           //callback({type: 'loading_failed'});
@@ -1517,7 +1511,7 @@ const Potree = {};
           loaded(pointcloud);
         }
       });
-    } else if (path.indexOf(".vpc") > 0) {
+    } else if (path.indexOf('.vpc') > 0) {
       PointCloudArena4DGeometry.load(path, function(geometry) {
         if (!geometry) {
           //callback({type: 'loading_failed'});
@@ -1540,15 +1534,15 @@ const Potree = {};
     $.fn.extend({
       selectgroup: function(args = {}) {
         let elGroup = $(this);
-        let rootID = elGroup.prop("id");
+        let rootID = elGroup.prop('id');
         let groupID = `${rootID}`;
-        let groupTitle = args.title !== undefined ? args.title : "";
+        let groupTitle = args.title !== undefined ? args.title : '';
 
         let elButtons = [];
-        elGroup.find("option").each((index, value) => {
-          let buttonID = $(value).prop("id");
+        elGroup.find('option').each((index, value) => {
+          let buttonID = $(value).prop('id');
           let label = $(value).html();
-          let optionValue = $(value).prop("value");
+          let optionValue = $(value).prop('value');
 
           let elButton = $(`
 					<span style="flex-grow: 1; display: inherit">
@@ -1556,14 +1550,14 @@ const Potree = {};
 					<input type="radio" name="${groupID}" id="${buttonID}" value="${optionValue}" style="display: none"/>
 					</span>
 				`);
-          let elLabel = elButton.find("label");
-          let elInput = elButton.find("input");
+          let elLabel = elButton.find('label');
+          let elInput = elButton.find('input');
 
           elInput.change(() => {
-            elGroup.find("label").removeClass("ui-state-active");
-            elGroup.find("label").addClass("ui-state-default");
-            if (elInput.is(":checked")) {
-              elLabel.addClass("ui-state-active");
+            elGroup.find('label').removeClass('ui-state-active');
+            elGroup.find('label').addClass('ui-state-default');
+            if (elInput.is(':checked')) {
+              elLabel.addClass('ui-state-active');
             } else {
               //elLabel.addClass("ui-state-default");
             }
@@ -1581,23 +1575,23 @@ const Potree = {};
 				</fieldset>
 			`);
 
-        let elButtonContainer = elFieldset.find("span");
+        let elButtonContainer = elFieldset.find('span');
         for (let elButton of elButtons) {
           elButtonContainer.append(elButton);
         }
 
-        elButtonContainer.find("label").each((index, value) => {
-          $(value).css("margin", "0px");
-          $(value).css("border-radius", "0px");
-          $(value).css("border", "1px solid black");
-          $(value).css("border-left", "none");
+        elButtonContainer.find('label').each((index, value) => {
+          $(value).css('margin', '0px');
+          $(value).css('border-radius', '0px');
+          $(value).css('border', '1px solid black');
+          $(value).css('border-left', 'none');
         });
-        elButtonContainer.find("label:first").each((index, value) => {
-          $(value).css("border-radius", "4px 0px 0px 4px");
+        elButtonContainer.find('label:first').each((index, value) => {
+          $(value).css('border-radius', '4px 0px 0px 4px');
         });
-        elButtonContainer.find("label:last").each((index, value) => {
-          $(value).css("border-radius", "0px 4px 4px 0px");
-          $(value).css("border-left", "none");
+        elButtonContainer.find('label:last').each((index, value) => {
+          $(value).css('border-radius', '0px 4px 4px 0px');
+          $(value).css('border-left', 'none');
         });
 
         elGroup.empty();
@@ -1623,7 +1617,7 @@ const Potree = {};
   exports.updateVisibility = updateVisibility;
   exports.Viewer = Viewer;
 
-  Object.defineProperty(exports, "__esModule", { value: true });
+  Object.defineProperty(exports, '__esModule', { value: true });
 });
 //# sourceMappingURL=potree.js.map
 

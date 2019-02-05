@@ -5,8 +5,15 @@ interface dispatchEvent {
 }
 
 class EventDispatcher {
+  debug = true;
   private listeners = {};
   constructor() {}
+
+  post(msg, pl) {
+    if (this.debug) {
+      console.log(msg, pl);
+    }
+  }
 
   addEventListener: (a: string, b: Function) => void = (type, listener) => {
     if (this.listeners[type] === undefined) {
@@ -20,7 +27,8 @@ class EventDispatcher {
 
   hasEventListener: (a: string, b: Function) => void = (type, listener) => {
     return (
-      this.listeners[type] !== undefined && this.listeners[type].indexOf(listener) !== -1
+      this.listeners[type] !== undefined &&
+      this.listeners[type].indexOf(listener) !== -1
     );
   };
 
@@ -34,7 +42,7 @@ class EventDispatcher {
         listenerArray.splice(index, 1);
       }
     }
-  }
+  };
 
   removeEventListeners(type) {
     if (this.listeners[type] !== undefined) {
@@ -53,7 +61,6 @@ class EventDispatcher {
       }
     }
   }
-
 }
 
 export default EventDispatcher;

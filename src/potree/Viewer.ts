@@ -1,43 +1,43 @@
-import i18n from "i18next";
-import Potree from "./potree";
-import * as THREE from "three";
-import TWEEN from "tween";
+import i18n from 'i18next';
+import Potree from './potree';
+import * as THREE from 'three';
+import TWEEN from 'tween';
 
-import EventDispatcher from "./EventDispatcher";
+import EventDispatcher from './EventDispatcher';
 
-import Renderer from "./Renderer";
+import Renderer from './Renderer';
 
-import { ClipTask, ClipMethod, CameraMode } from "./Presets";
-import ClippingTool from "./ClippingTool";
-import InputHandler from "./InputHandler";
+import { ClipTask, ClipMethod, CameraMode } from './Presets';
+import ClippingTool from './ClippingTool';
+import InputHandler from './InputHandler';
 
-import TransformationTool from "./TransformationTool";
-import NavigationCube from "./NavigationCube";
-import OrbitControls from "./OrbitControls";
-import FirstPersonControls from "./FirstPersonControls";
-import EarthControls from "./EarthControls";
-import DeviceOrientationControls from "./DeviceOrientationControls";
+import TransformationTool from './TransformationTool';
+import NavigationCube from './NavigationCube';
+import OrbitControls from './OrbitControls';
+import FirstPersonControls from './FirstPersonControls';
+import EarthControls from './EarthControls';
+import DeviceOrientationControls from './DeviceOrientationControls';
 
-import Scene from "./Scene";
-import Utils from "./Utils";
+import Scene from './Scene';
+import Utils from './Utils';
 
-import MapView from "./MapView";
-import Sidebar from "./Sidebar";
+import MapView from './MapView';
+import Sidebar from './Sidebar';
 
-import ProfileWindow from "./ProfileWindow";
-import ProfileWindowController from "./ProfileWindowController";
-import { Annotation } from "./Annotation";
-import { Camera } from "three";
+import ProfileWindow from './ProfileWindow';
+import ProfileWindowController from './ProfileWindowController';
+import { Annotation } from './Annotation';
+import { Camera } from 'three';
 
-import BoxVolume from "./BoxVolume";
+import BoxVolume from './BoxVolume';
 
-import { RepRenderer } from "./Renderers/RepRenderer";
-import HQSplatRenderer from "./Renderers/HQSplatRenderer";
-import EDLRenderer from "./Renderers/EDLRenderer";
-import PotreeRenderer from "./Renderers/PotreeRenderer";
+import { RepRenderer } from './Renderers/RepRenderer';
+import HQSplatRenderer from './Renderers/HQSplatRenderer';
+import EDLRenderer from './Renderers/EDLRenderer';
+import PotreeRenderer from './Renderers/PotreeRenderer';
 
-import Features from "./Features";
-import Message from "./Message";
+import Features from './Features';
+import Message from './Message';
 
 interface Viewer {
   renderArea: HTMLElement;
@@ -146,7 +146,7 @@ interface ViewerArgs {
 }
 
 class Viewer extends EventDispatcher {
-  localPath = "http://localhost:8080/";
+  localPath = 'http://localhost:8080/';
   constructor(domElement: HTMLElement, args: ViewerArgs = {}) {
     super();
     this.renderArea = domElement;
@@ -163,7 +163,7 @@ class Viewer extends EventDispatcher {
     try {
       {
         // generate missing dom hierarchy
-        if ($(domElement).find("#potree_map").length === 0) {
+        if ($(domElement).find('#potree_map').length === 0) {
           let potreeMap = $(`
 					<div id="potree_map" class="mapBox" style="position: absolute; left: 50px; top: 50px; width: 400px; height: 400px; display: none">
 						<div id="potree_map_header" style="position: absolute; width: 100%; height: 25px; top: 0px; background-color: rgba(0,0,0,0.5); z-index: 1000; border-top-left-radius: 3px; border-top-right-radius: 3px;">
@@ -174,14 +174,14 @@ class Viewer extends EventDispatcher {
           $(domElement).append(potreeMap);
         }
 
-        if ($(domElement).find("#potree_description").length === 0) {
+        if ($(domElement).find('#potree_description').length === 0) {
           let potreeDescription = $(
             `<div id="potree_description" class="potree_info_text"></div>`
           );
           $(domElement).append(potreeDescription);
         }
 
-        if ($(domElement).find("#potree_annotations").length === 0) {
+        if ($(domElement).find('#potree_annotations').length === 0) {
           let potreeAnnotationContainer = $(`
 					<div id="potree_annotation_container" 
 						style="position: absolute; z-index: 100000; width: 100%; height: 100%; pointer-events: none;"></div>`);
@@ -206,25 +206,25 @@ class Viewer extends EventDispatcher {
       this.edlRadius = 1.4;
       this.useEDL = false;
       this.classifications = {
-        0: { visible: true, name: "never classified" },
-        1: { visible: true, name: "unclassified" },
-        2: { visible: true, name: "ground" },
-        3: { visible: true, name: "low vegetation" },
-        4: { visible: true, name: "medium vegetation" },
-        5: { visible: true, name: "high vegetation" },
-        6: { visible: true, name: "building" },
-        7: { visible: true, name: "low point(noise)" },
-        8: { visible: true, name: "key-point" },
-        9: { visible: true, name: "water" },
-        12: { visible: true, name: "overlap" }
+        0: { visible: true, name: 'never classified' },
+        1: { visible: true, name: 'unclassified' },
+        2: { visible: true, name: 'ground' },
+        3: { visible: true, name: 'low vegetation' },
+        4: { visible: true, name: 'medium vegetation' },
+        5: { visible: true, name: 'high vegetation' },
+        6: { visible: true, name: 'building' },
+        7: { visible: true, name: 'low point(noise)' },
+        8: { visible: true, name: 'key-point' },
+        9: { visible: true, name: 'water' },
+        12: { visible: true, name: 'overlap' }
       };
 
       this.moveSpeed = 10;
 
       this.LENGTH_UNITS = {
-        METER: { code: "m", unitspermeter: 1.0 },
-        FEET: { code: "ft", unitspermeter: 3.28084 },
-        INCH: { code: "\u2033", unitspermeter: 39.3701 }
+        METER: { code: 'm', unitspermeter: 1.0 },
+        FEET: { code: 'ft', unitspermeter: 3.28084 },
+        INCH: { code: '\u2033', unitspermeter: 39.3701 }
       };
       this.lengthUnit = this.LENGTH_UNITS.METER;
       this.lengthUnitDisplay = this.LENGTH_UNITS.METER;
@@ -265,10 +265,10 @@ class Viewer extends EventDispatcher {
       {
         let canvas = this.renderer.domElement;
         canvas.addEventListener(
-          "webglcontextlost",
+          'webglcontextlost',
           e => {
             console.log(e);
-            this.postMessage("WebGL context lost. \u2639");
+            this.postMessage('WebGL context lost. \u2639');
 
             let gl = this.renderer.getContext();
             let error = gl.getError();
@@ -333,23 +333,23 @@ class Viewer extends EventDispatcher {
           this.inputHandler.deselect(e.volume);
         };
 
-        this.addEventListener("scene_changed", e => {
+        this.addEventListener('scene_changed', e => {
           this.inputHandler.setScene(e.scene);
           this.clippingTool.setScene(this.scene);
 
           if (
-            !e.scene.hasEventListener("pointcloud_added", onPointcloudAdded)
+            !e.scene.hasEventListener('pointcloud_added', onPointcloudAdded)
           ) {
-            e.scene.addEventListener("pointcloud_added", onPointcloudAdded);
+            e.scene.addEventListener('pointcloud_added', onPointcloudAdded);
           }
 
-          if (!e.scene.hasEventListener("volume_removed", onPointcloudAdded)) {
-            e.scene.addEventListener("volume_removed", onVolumeRemoved);
+          if (!e.scene.hasEventListener('volume_removed', onPointcloudAdded)) {
+            e.scene.addEventListener('volume_removed', onVolumeRemoved);
           }
         });
 
-        this.scene.addEventListener("volume_removed", onVolumeRemoved);
-        this.scene.addEventListener("pointcloud_added", onPointcloudAdded);
+        this.scene.addEventListener('volume_removed', onVolumeRemoved);
+        this.scene.addEventListener('pointcloud_added', onPointcloudAdded);
       }
 
       {
@@ -364,7 +364,7 @@ class Viewer extends EventDispatcher {
         this.setShowBoundingBox(false);
         this.setFreeze(false);
         this.setNavigationMode(OrbitControls);
-        this.setBackground("gradient");
+        this.setBackground('gradient');
 
         this.scaleFactor = 1;
 
@@ -388,7 +388,7 @@ class Viewer extends EventDispatcher {
   onCrash(error) {
     $(this.renderArea).empty();
 
-    if ($(this.renderArea).find("#potree_failpage").length === 0) {
+    if ($(this.renderArea).find('#potree_failpage').length === 0) {
       let elFailPage = $(`
 			<div id="#potree_failpage" class="potree_failpage"> 
 				
@@ -419,7 +419,7 @@ class Viewer extends EventDispatcher {
 				
 			</div>`);
 
-      let elErrorMessage = elFailPage.find("#potree_error_console");
+      let elErrorMessage = elFailPage.find('#potree_error_console');
       elErrorMessage.html(error.stack);
 
       $(this.renderArea).append(elFailPage);
@@ -441,14 +441,14 @@ class Viewer extends EventDispatcher {
     this.scene = scene;
 
     this.dispatchEvent({
-      type: "scene_changed",
+      type: 'scene_changed',
       oldScene: oldScene,
       scene: scene
     });
 
     {
       // Annotations
-      $(".annotation").detach();
+      $('.annotation').detach();
 
       // for(let annotation of this.scene.annotations){
       //	this.renderArea.appendChild(annotation.domElement[0]);
@@ -463,7 +463,7 @@ class Viewer extends EventDispatcher {
           // console.log("annotation added: " + e.annotation.title);
 
           e.annotation.traverse(node => {
-            $("#potree_annotation_container").append(node.domElement);
+            $('#potree_annotation_container').append(node.domElement);
             //this.renderArea.appendChild(node.domElement[0]);
             node.scene = this.scene;
           });
@@ -472,12 +472,12 @@ class Viewer extends EventDispatcher {
 
       if (oldScene) {
         oldScene.annotations.removeEventListener(
-          "annotation_added",
+          'annotation_added',
           this.onAnnotationAdded
         );
       }
       this.scene.annotations.addEventListener(
-        "annotation_added",
+        'annotation_added',
         this.onAnnotationAdded
       );
     }
@@ -504,7 +504,7 @@ class Viewer extends EventDispatcher {
   setMinNodeSize(value) {
     if (this.minNodeSize !== value) {
       this.minNodeSize = value;
-      this.dispatchEvent({ type: "minnodesize_changed", viewer: this });
+      this.dispatchEvent({ type: 'minnodesize_changed', viewer: this });
     }
   }
 
@@ -517,18 +517,18 @@ class Viewer extends EventDispatcher {
       return;
     }
 
-    if (bg === "skybox") {
+    if (bg === 'skybox') {
       this.skybox = Utils.loadSkybox(
         new URL(`${this.localPath}static/resources/textures/skybox2/`).href
       );
     }
 
     this.background = bg;
-    this.dispatchEvent({ type: "background_changed", viewer: this });
+    this.dispatchEvent({ type: 'background_changed', viewer: this });
   }
 
   setDescription(value) {
-    $("#potree_description")[0].innerHTML = value;
+    $('#potree_description')[0].innerHTML = value;
   }
 
   setNavigationMode(value) {
@@ -538,7 +538,7 @@ class Viewer extends EventDispatcher {
   setShowBoundingBox(value) {
     if (this.showBoundingBox !== value) {
       this.showBoundingBox = value;
-      this.dispatchEvent({ type: "show_boundingbox_changed", viewer: this });
+      this.dispatchEvent({ type: 'show_boundingbox_changed', viewer: this });
     }
   }
 
@@ -550,7 +550,7 @@ class Viewer extends EventDispatcher {
     if (this.moveSpeed !== value) {
       this.moveSpeed = value;
       this.dispatchEvent({
-        type: "move_speed_changed",
+        type: 'move_speed_changed',
         viewer: this,
         speed: value
       });
@@ -565,7 +565,7 @@ class Viewer extends EventDispatcher {
     for (let i = 0; i < this.scene.pointclouds.length; i++) {
       this.scene.pointclouds[i].material.weightClassification = w;
       this.dispatchEvent({
-        type: "attribute_weights_changed" + i,
+        type: 'attribute_weights_changed' + i,
         viewer: this
       });
     }
@@ -575,7 +575,7 @@ class Viewer extends EventDispatcher {
     value = Boolean(value);
     if (this.freeze !== value) {
       this.freeze = value;
-      this.dispatchEvent({ type: "freeze_changed", viewer: this });
+      this.dispatchEvent({ type: 'freeze_changed', viewer: this });
     }
   }
 
@@ -596,7 +596,7 @@ class Viewer extends EventDispatcher {
       this.clipTask = value;
 
       this.dispatchEvent({
-        type: "cliptask_changed",
+        type: 'cliptask_changed',
         viewer: this
       });
     }
@@ -607,7 +607,7 @@ class Viewer extends EventDispatcher {
       this.clipMethod = value;
 
       this.dispatchEvent({
-        type: "clipmethod_changed",
+        type: 'clipmethod_changed',
         viewer: this
       });
     }
@@ -616,7 +616,7 @@ class Viewer extends EventDispatcher {
   setPointBudget(value) {
     if (Potree.pointBudget !== value) {
       Potree.pointBudget = parseInt(value);
-      this.dispatchEvent({ type: "point_budget_changed", viewer: this });
+      this.dispatchEvent({ type: 'point_budget_changed', viewer: this });
     }
   }
 
@@ -627,7 +627,7 @@ class Viewer extends EventDispatcher {
   setShowAnnotations(value) {
     if (this.showAnnotations !== value) {
       this.showAnnotations = value;
-      this.dispatchEvent({ type: "show_annotations_changed", viewer: this });
+      this.dispatchEvent({ type: 'show_annotations_changed', viewer: this });
     }
   }
 
@@ -638,7 +638,7 @@ class Viewer extends EventDispatcher {
   setDEMCollisionsEnabled(value) {
     if (this.useDEMCollisions !== value) {
       this.useDEMCollisions = value;
-      this.dispatchEvent({ type: "use_demcollisions_changed", viewer: this });
+      this.dispatchEvent({ type: 'use_demcollisions_changed', viewer: this });
     }
   }
 
@@ -650,7 +650,7 @@ class Viewer extends EventDispatcher {
     value = Boolean(value);
     if (this.useEDL !== value) {
       this.useEDL = value;
-      this.dispatchEvent({ type: "use_edl_changed", viewer: this });
+      this.dispatchEvent({ type: 'use_edl_changed', viewer: this });
     }
   }
 
@@ -661,7 +661,7 @@ class Viewer extends EventDispatcher {
   setEDLRadius(value) {
     if (this.edlRadius !== value) {
       this.edlRadius = value;
-      this.dispatchEvent({ type: "edl_radius_changed", viewer: this });
+      this.dispatchEvent({ type: 'edl_radius_changed', viewer: this });
     }
   }
 
@@ -672,7 +672,7 @@ class Viewer extends EventDispatcher {
   setEDLStrength(value) {
     if (this.edlStrength !== value) {
       this.edlStrength = value;
-      this.dispatchEvent({ type: "edl_strength_changed", viewer: this });
+      this.dispatchEvent({ type: 'edl_strength_changed', viewer: this });
     }
   }
 
@@ -683,7 +683,7 @@ class Viewer extends EventDispatcher {
   setFOV(value) {
     if (this.fov !== value) {
       this.fov = value;
-      this.dispatchEvent({ type: "fov_changed", viewer: this });
+      this.dispatchEvent({ type: 'fov_changed', viewer: this });
     }
   }
 
@@ -693,7 +693,7 @@ class Viewer extends EventDispatcher {
 
   disableAnnotations() {
     this.scene.annotations.traverse(annotation => {
-      annotation.domElement.css("pointer-events", "none");
+      annotation.domElement.css('pointer-events', 'none');
 
       // return annotation.visible;
     });
@@ -701,7 +701,7 @@ class Viewer extends EventDispatcher {
 
   enableAnnotations() {
     this.scene.annotations.traverse(annotation => {
-      annotation.domElement.css("pointer-events", "auto");
+      annotation.domElement.css('pointer-events', 'auto');
 
       // return annotation.visible;
     });
@@ -709,15 +709,15 @@ class Viewer extends EventDispatcher {
 
   setClassificationVisibility(key, value) {
     if (!this.classifications[key]) {
-      this.classifications[key] = { visible: value, name: "no name" };
+      this.classifications[key] = { visible: value, name: 'no name' };
       this.dispatchEvent({
-        type: "classification_visibility_changed",
+        type: 'classification_visibility_changed',
         viewer: this
       });
     } else if (this.classifications[key].visible !== value) {
       this.classifications[key].visible = value;
       this.dispatchEvent({
-        type: "classification_visibility_changed",
+        type: 'classification_visibility_changed',
         viewer: this
       });
     }
@@ -726,7 +726,7 @@ class Viewer extends EventDispatcher {
   setFilterReturnNumberRange(from, to) {
     this.filterReturnNumberRange = [from, to];
     this.dispatchEvent({
-      type: "filter_return_number_range_changed",
+      type: 'filter_return_number_range_changed',
       viewer: this
     });
   }
@@ -734,7 +734,7 @@ class Viewer extends EventDispatcher {
   setFilterNumberOfReturnsRange(from, to) {
     this.filterNumberOfReturnsRange = [from, to];
     this.dispatchEvent({
-      type: "filter_number_of_returns_range_changed",
+      type: 'filter_number_of_returns_range_changed',
       viewer: this
     });
   }
@@ -742,7 +742,7 @@ class Viewer extends EventDispatcher {
   setFilterGPSTimeRange(from, to) {
     this.filterGPSTimeRange = [from, to];
     this.dispatchEvent({
-      type: "filter_gps_time_range_changed",
+      type: 'filter_gps_time_range_changed',
       viewer: this
     });
   }
@@ -750,29 +750,29 @@ class Viewer extends EventDispatcher {
   setFilterGPSTimeExtent(from, to) {
     this.filterGPSTimeExtent = [from, to];
     this.dispatchEvent({
-      type: "filter_gps_time_extent_changed",
+      type: 'filter_gps_time_extent_changed',
       viewer: this
     });
   }
 
   setLengthUnit(value) {
     switch (value) {
-      case "m":
+      case 'm':
         this.lengthUnit = this.LENGTH_UNITS.METER;
         this.lengthUnitDisplay = this.LENGTH_UNITS.METER;
         break;
-      case "ft":
+      case 'ft':
         this.lengthUnit = this.LENGTH_UNITS.FEET;
         this.lengthUnitDisplay = this.LENGTH_UNITS.FEET;
         break;
-      case "in":
+      case 'in':
         this.lengthUnit = this.LENGTH_UNITS.INCH;
         this.lengthUnitDisplay = this.LENGTH_UNITS.INCH;
         break;
     }
 
     this.dispatchEvent({
-      type: "length_unit_changed",
+      type: 'length_unit_changed',
       viewer: this,
       value: value
     });
@@ -780,31 +780,31 @@ class Viewer extends EventDispatcher {
 
   setLengthUnitAndDisplayUnit(lengthUnitValue, lengthUnitDisplayValue) {
     switch (lengthUnitValue) {
-      case "m":
+      case 'm':
         this.lengthUnit = this.LENGTH_UNITS.METER;
         break;
-      case "ft":
+      case 'ft':
         this.lengthUnit = this.LENGTH_UNITS.FEET;
         break;
-      case "in":
+      case 'in':
         this.lengthUnit = this.LENGTH_UNITS.INCH;
         break;
     }
 
     switch (lengthUnitDisplayValue) {
-      case "m":
+      case 'm':
         this.lengthUnitDisplay = this.LENGTH_UNITS.METER;
         break;
-      case "ft":
+      case 'ft':
         this.lengthUnitDisplay = this.LENGTH_UNITS.FEET;
         break;
-      case "in":
+      case 'in':
         this.lengthUnitDisplay = this.LENGTH_UNITS.INCH;
         break;
     }
 
     this.dispatchEvent({
-      type: "length_unit_changed",
+      type: 'length_unit_changed',
       viewer: this,
       value: lengthUnitValue
     });
@@ -815,7 +815,7 @@ class Viewer extends EventDispatcher {
 
     let camera = this.scene.cameraP.clone();
     camera.rotation.copy(this.scene.cameraP.rotation);
-    camera.rotation.order = "ZXY";
+    camera.rotation.order = 'ZXY';
     camera.rotation.x = Math.PI / 2 + view.pitch;
     camera.rotation.z = view.yaw;
     camera.updateMatrix();
@@ -864,10 +864,10 @@ class Viewer extends EventDispatcher {
       });
       tween.onComplete(() => {
         view.lookAt(target);
-        this.dispatchEvent({ type: "focusing_finished", target: this });
+        this.dispatchEvent({ type: 'focusing_finished', target: this });
       });
 
-      this.dispatchEvent({ type: "focusing_started", target: this });
+      this.dispatchEvent({ type: 'focusing_started', target: this });
       tween.start();
     }
   }
@@ -875,7 +875,7 @@ class Viewer extends EventDispatcher {
   showAbout() {
     $(function() {
       //@ts-ignore
-      $("#about-panel").dialog();
+      $('#about-panel').dialog();
     });
   }
 
@@ -904,22 +904,22 @@ class Viewer extends EventDispatcher {
     if (!view) return;
 
     switch (view) {
-      case "F":
+      case 'F':
         this.setFrontView();
         break;
-      case "B":
+      case 'B':
         this.setBackView();
         break;
-      case "L":
+      case 'L':
         this.setLeftView();
         break;
-      case "R":
+      case 'R':
         this.setRightView();
         break;
-      case "U":
+      case 'U':
         this.setTopView();
         break;
-      case "D":
+      case 'D':
         this.setBottomView();
         break;
     }
@@ -971,7 +971,7 @@ class Viewer extends EventDispatcher {
     this.isFlipYZ = !this.isFlipYZ;
 
     // TODO flipyz
-    console.log("TODO");
+    console.log('TODO');
   }
 
   setCameraMode(mode) {
@@ -984,37 +984,37 @@ class Viewer extends EventDispatcher {
   }
 
   loadSettingsFromURL() {
-    if (Utils.getParameterByName("pointSize")) {
-      this.setPointSize(parseFloat(Utils.getParameterByName("pointSize")));
+    if (Utils.getParameterByName('pointSize')) {
+      this.setPointSize(parseFloat(Utils.getParameterByName('pointSize')));
     }
 
-    if (Utils.getParameterByName("FOV")) {
-      this.setFOV(parseFloat(Utils.getParameterByName("FOV")));
+    if (Utils.getParameterByName('FOV')) {
+      this.setFOV(parseFloat(Utils.getParameterByName('FOV')));
     }
 
-    if (Utils.getParameterByName("opacity")) {
-      this.setOpacity(parseFloat(Utils.getParameterByName("opacity")));
+    if (Utils.getParameterByName('opacity')) {
+      this.setOpacity(parseFloat(Utils.getParameterByName('opacity')));
     }
 
-    if (Utils.getParameterByName("edlEnabled")) {
-      let enabled = Utils.getParameterByName("edlEnabled") === "true";
+    if (Utils.getParameterByName('edlEnabled')) {
+      let enabled = Utils.getParameterByName('edlEnabled') === 'true';
       this.setEDLEnabled(enabled);
     }
 
-    if (Utils.getParameterByName("edlRadius")) {
-      this.setEDLRadius(parseFloat(Utils.getParameterByName("edlRadius")));
+    if (Utils.getParameterByName('edlRadius')) {
+      this.setEDLRadius(parseFloat(Utils.getParameterByName('edlRadius')));
     }
 
-    if (Utils.getParameterByName("edlStrength")) {
-      this.setEDLStrength(parseFloat(Utils.getParameterByName("edlStrength")));
+    if (Utils.getParameterByName('edlStrength')) {
+      this.setEDLStrength(parseFloat(Utils.getParameterByName('edlStrength')));
     }
 
-    if (Utils.getParameterByName("pointBudget")) {
-      this.setPointBudget(parseFloat(Utils.getParameterByName("pointBudget")));
+    if (Utils.getParameterByName('pointBudget')) {
+      this.setPointBudget(parseFloat(Utils.getParameterByName('pointBudget')));
     }
 
-    if (Utils.getParameterByName("showBoundingBox")) {
-      let enabled = Utils.getParameterByName("showBoundingBox") === "true";
+    if (Utils.getParameterByName('showBoundingBox')) {
+      let enabled = Utils.getParameterByName('showBoundingBox') === 'true';
       if (enabled) {
         this.setShowBoundingBox(true);
       } else {
@@ -1022,25 +1022,25 @@ class Viewer extends EventDispatcher {
       }
     }
 
-    if (Utils.getParameterByName("material")) {
-      let material = Utils.getParameterByName("material");
+    if (Utils.getParameterByName('material')) {
+      let material = Utils.getParameterByName('material');
       this.setMaterial(material);
     }
 
-    if (Utils.getParameterByName("pointSizing")) {
-      let sizing = Utils.getParameterByName("pointSizing");
+    if (Utils.getParameterByName('pointSizing')) {
+      let sizing = Utils.getParameterByName('pointSizing');
       this.setPointSizing(sizing);
     }
 
-    if (Utils.getParameterByName("quality")) {
-      let quality = Utils.getParameterByName("quality");
+    if (Utils.getParameterByName('quality')) {
+      let quality = Utils.getParameterByName('quality');
       this.setQuality(quality);
     }
 
-    if (Utils.getParameterByName("position")) {
-      let value = Utils.getParameterByName("position");
-      value = value.replace("[", "").replace("]", "");
-      let tokens = value.split(";");
+    if (Utils.getParameterByName('position')) {
+      let value = Utils.getParameterByName('position');
+      value = value.replace('[', '').replace(']', '');
+      let tokens = value.split(';');
       let x = parseFloat(tokens[0]);
       let y = parseFloat(tokens[1]);
       let z = parseFloat(tokens[2]);
@@ -1048,10 +1048,10 @@ class Viewer extends EventDispatcher {
       this.scene.view.position.set(x, y, z);
     }
 
-    if (Utils.getParameterByName("target")) {
-      let value = Utils.getParameterByName("target");
-      value = value.replace("[", "").replace("]", "");
-      let tokens = value.split(";");
+    if (Utils.getParameterByName('target')) {
+      let value = Utils.getParameterByName('target');
+      value = value.replace('[', '').replace(']', '');
+      let tokens = value.split(';');
       let x = parseFloat(tokens[0]);
       let y = parseFloat(tokens[1]);
       let z = parseFloat(tokens[2]);
@@ -1059,8 +1059,8 @@ class Viewer extends EventDispatcher {
       this.scene.view.lookAt(new THREE.Vector3(x, y, z));
     }
 
-    if (Utils.getParameterByName("background")) {
-      let value = Utils.getParameterByName("background");
+    if (Utils.getParameterByName('background')) {
+      let value = Utils.getParameterByName('background');
       this.setBackground(value);
     }
 
@@ -1086,11 +1086,11 @@ class Viewer extends EventDispatcher {
       this.fpControls = new FirstPersonControls(this);
       this.fpControls.enabled = false;
       this.fpControls.addEventListener(
-        "start",
+        'start',
         this.disableAnnotations.bind(this)
       );
       this.fpControls.addEventListener(
-        "end",
+        'end',
         this.enableAnnotations.bind(this)
       );
       // this.fpControls.addEventListener("double_click_move", (event) => {
@@ -1117,11 +1117,11 @@ class Viewer extends EventDispatcher {
       this.orbitControls = new OrbitControls(this);
       this.orbitControls.enabled = false;
       this.orbitControls.addEventListener(
-        "start",
+        'start',
         this.disableAnnotations.bind(this)
       );
       this.orbitControls.addEventListener(
-        "end",
+        'end',
         this.enableAnnotations.bind(this)
       );
     }
@@ -1131,11 +1131,11 @@ class Viewer extends EventDispatcher {
       this.earthControls = new EarthControls(this);
       this.earthControls.enabled = false;
       this.earthControls.addEventListener(
-        "start",
+        'start',
         this.disableAnnotations.bind(this)
       );
       this.earthControls.addEventListener(
-        "end",
+        'end',
         this.enableAnnotations.bind(this)
       );
     }
@@ -1145,24 +1145,24 @@ class Viewer extends EventDispatcher {
       this.deviceControls = new DeviceOrientationControls(this);
       this.deviceControls.enabled = false;
       this.deviceControls.addEventListener(
-        "start",
+        'start',
         this.disableAnnotations.bind(this)
       );
       this.deviceControls.addEventListener(
-        "end",
+        'end',
         this.enableAnnotations.bind(this)
       );
     }
   }
 
   toggleSidebar() {
-    let renderArea = $("#potree_render_area");
-    let isVisible = renderArea.css("left") !== "0px";
+    let renderArea = $('#potree_render_area');
+    let isVisible = renderArea.css('left') !== '0px';
 
     if (isVisible) {
-      renderArea.css("left", "0px");
+      renderArea.css('left', '0px');
     } else {
-      renderArea.css("left", "300px");
+      renderArea.css('left', '300px');
     }
   }
 
@@ -1187,29 +1187,29 @@ class Viewer extends EventDispatcher {
     this.onGUILoaded(callback);
 
     let viewer = this;
-    let sidebarContainer = $("#potree_sidebar_container");
+    let sidebarContainer = $('#potree_sidebar_container');
     sidebarContainer.load(
-      new URL(this.localPath + "static/sidebar.html").href,
+      new URL(this.localPath + 'static/sidebar.html').href,
       () => {
-        sidebarContainer.css("width", "300px");
-        sidebarContainer.css("height", "100%");
+        sidebarContainer.css('width', '300px');
+        sidebarContainer.css('height', '100%');
 
-        let imgMenuToggle = document.createElement("img");
+        let imgMenuToggle = document.createElement('img');
         imgMenuToggle.src = new URL(
-          this.localPath + "static/resources/icons/menu_button.svg"
+          this.localPath + 'static/resources/icons/menu_button.svg'
         ).href;
         imgMenuToggle.onclick = this.toggleSidebar;
-        imgMenuToggle.classList.add("potree_menu_toggle");
+        imgMenuToggle.classList.add('potree_menu_toggle');
 
-        let imgMapToggle = document.createElement("img");
+        let imgMapToggle = document.createElement('img');
         imgMapToggle.src = new URL(
-          this.localPath + "static/resouces/icons/map_icon.png"
+          this.localPath + 'static/resouces/icons/map_icon.png'
         ).href;
-        imgMapToggle.style.display = "none";
+        imgMapToggle.style.display = 'none';
         imgMapToggle.onclick = e => {
           this.toggleMap();
         };
-        imgMapToggle.id = "potree_map_toggle";
+        imgMapToggle.id = 'potree_map_toggle';
 
         viewer.renderArea.insertBefore(
           imgMapToggle,
@@ -1225,17 +1225,17 @@ class Viewer extends EventDispatcher {
 
         i18n.init(
           {
-            lng: "en",
+            lng: 'en',
             //@ts-ignore
-            resGetPath: "static/resouces/lang/__lng__/__ns__.json",
-            preload: ["en", "fr", "de", "jp"],
+            resGetPath: 'static/resouces/lang/__lng__/__ns__.json',
+            preload: ['en', 'fr', 'de', 'jp'],
             getAsync: true,
             debug: false
           },
           function(t) {
             // Start translation once everything is loaded
             //@ts-ignore
-            $("body").i18n();
+            $('body').i18n();
           }
         );
 
@@ -1248,21 +1248,21 @@ class Viewer extends EventDispatcher {
           //	$(callback);
           //}
 
-          let elProfile = $("<div>").load(
-            new URL(this.localPath + "static/profile.html").href,
+          let elProfile = $('<div>').load(
+            new URL(this.localPath + 'static/profile.html').href,
             () => {
               $(document.body).append(elProfile.children());
               this.profileWindow = new ProfileWindow(this);
               this.profileWindowController = new ProfileWindowController(this);
               //@ts-ignore
-              $("#profile_window").draggable({
-                handle: $("#profile_titlebar"),
+              $('#profile_window').draggable({
+                handle: $('#profile_titlebar'),
                 containment: $(document.body)
               });
               //@ts-ignore
-              $("#profile_window").resizable({
+              $('#profile_window').resizable({
                 containment: $(document.body),
-                handles: "n, e, s, w"
+                handles: 'n, e, s, w'
               });
 
               $(() => {
@@ -1282,7 +1282,7 @@ class Viewer extends EventDispatcher {
     //@ts-ignore;
     i18n.setLng(lang);
     //@ts-ignore;
-    $("body").i18n();
+    $('body').i18n();
   }
 
   setServer(server) {
@@ -1302,14 +1302,14 @@ class Viewer extends EventDispatcher {
       antialias: false,
       //premultipliedAlpha: _premultipliedAlpha,
       preserveDrawingBuffer: true,
-      powerPreference: "high-performance"
+      powerPreference: 'high-performance'
     };
 
-    let canvas = document.createElement("canvas");
+    let canvas = document.createElement('canvas');
 
     //let context = canvas.getContext('webgl2', contextAttributes );
     //if(!context){
-    let context = canvas.getContext("webgl", contextAttributes);
+    let context = canvas.getContext('webgl', contextAttributes);
     Features.WEBGL2.isSupported = () => {
       return false;
     };
@@ -1326,23 +1326,23 @@ class Viewer extends EventDispatcher {
     this.renderer.setSize(width, height);
     this.renderer.autoClear = false;
     this.renderArea.appendChild(this.renderer.domElement);
-    this.renderer.domElement.tabIndex = "2222";
-    this.renderer.domElement.style.position = "absolute";
-    this.renderer.domElement.addEventListener("mousedown", () => {
+    this.renderer.domElement.tabIndex = '2222';
+    this.renderer.domElement.style.position = 'absolute';
+    this.renderer.domElement.addEventListener('mousedown', () => {
       this.renderer.domElement.focus();
     });
     //this.renderer.domElement.focus();
 
     // enable frag_depth extension for the interpolation shader, if available
     let gl = this.renderer.context;
-    gl.getExtension("EXT_frag_depth");
-    gl.getExtension("WEBGL_depth_texture");
+    gl.getExtension('EXT_frag_depth');
+    gl.getExtension('WEBGL_depth_texture');
 
     if (gl instanceof WebGLRenderingContext) {
-      let extVAO = gl.getExtension("OES_vertex_array_object");
+      let extVAO = gl.getExtension('OES_vertex_array_object');
 
       if (!extVAO) {
-        throw new Error("OES_vertex_array_object extension not supported");
+        throw new Error('OES_vertex_array_object extension not supported');
       }
 
       //@ts-ignore
@@ -1351,7 +1351,7 @@ class Viewer extends EventDispatcher {
       gl.bindVertexArray = extVAO.bindVertexArrayOES.bind(extVAO);
       //@ts-ignore
     } else if (gl instanceof WebGL2RenderingContext) {
-      gl.getExtension("EXT_color_buffer_float");
+      gl.getExtension('EXT_color_buffer_float');
     }
   }
 
@@ -1420,8 +1420,8 @@ class Viewer extends EventDispatcher {
         }
       }
 
-      element.css("left", screenPos.x + "px");
-      element.css("top", screenPos.y + "px");
+      element.css('left', screenPos.x + 'px');
+      element.css('top', screenPos.y + 'px');
       //element.css("display", "block");
 
       let zIndex = 10000000 - distance * (10000000 / this.scene.cameraP.far);
@@ -1429,7 +1429,7 @@ class Viewer extends EventDispatcher {
         zIndex += 10000000;
       }
       //@ts-ignore
-      element.css("z-index", parseInt(zIndex));
+      element.css('z-index', parseInt(zIndex));
 
       if (annotation.children.length > 0) {
         let expand =
@@ -1473,7 +1473,7 @@ class Viewer extends EventDispatcher {
   }
 
   update(delta, timestamp) {
-    if (Potree.measureTimings) performance.mark("update-start");
+    if (Potree.measureTimings) performance.mark('update-start');
 
     // if(window.urlToggle === undefined){
     //	window.urlToggle = 0;
@@ -1628,11 +1628,11 @@ class Viewer extends EventDispatcher {
     {
       if (this.showBoundingBox) {
         let bbRoot = this.scene.scene.getObjectByName(
-          "potree_bounding_box_root"
+          'potree_bounding_box_root'
         );
         if (!bbRoot) {
           let node = new THREE.Object3D();
-          node.name = "potree_bounding_box_root";
+          node.name = 'potree_bounding_box_root';
           this.scene.scene.add(node);
           bbRoot = node;
         }
@@ -1740,12 +1740,12 @@ class Viewer extends EventDispatcher {
       this.controls.update(delta);
 
       this.scene.cameraP.position.copy(scene.view.position);
-      this.scene.cameraP.rotation.order = "ZXY";
+      this.scene.cameraP.rotation.order = 'ZXY';
       this.scene.cameraP.rotation.x = Math.PI / 2 + this.scene.view.pitch;
       this.scene.cameraP.rotation.z = this.scene.view.yaw;
 
       this.scene.cameraO.position.copy(scene.view.position);
-      this.scene.cameraO.rotation.order = "ZXY";
+      this.scene.cameraO.rotation.order = 'ZXY';
       this.scene.cameraO.rotation.x = Math.PI / 2 + this.scene.view.pitch;
       this.scene.cameraO.rotation.z = this.scene.view.yaw;
     }
@@ -1762,7 +1762,7 @@ class Viewer extends EventDispatcher {
 
       if (!this._previousCamera.matrixWorld.equals(camera.matrixWorld)) {
         this.dispatchEvent({
-          type: "camera_changed",
+          type: 'camera_changed',
           previous: this._previousCamera,
           camera: camera
         });
@@ -1770,7 +1770,7 @@ class Viewer extends EventDispatcher {
         !this._previousCamera.projectionMatrix.equals(camera.projectionMatrix)
       ) {
         this.dispatchEvent({
-          type: "camera_changed",
+          type: 'camera_changed',
           previous: this._previousCamera,
           camera: camera
         });
@@ -1828,26 +1828,26 @@ class Viewer extends EventDispatcher {
     if (this.mapView) {
       this.mapView.update(delta);
       if (this.mapView.sceneProjection) {
-        $("#potree_map_toggle").css("display", "block");
+        $('#potree_map_toggle').css('display', 'block');
       }
     }
 
     TWEEN.update(timestamp);
 
     this.dispatchEvent({
-      type: "update",
+      type: 'update',
       delta: delta,
       timestamp: timestamp
     });
 
     if (Potree.measureTimings) {
-      performance.mark("update-end");
-      performance.measure("update", "update-start", "update-end");
+      performance.mark('update-end');
+      performance.measure('update', 'update-start', 'update-end');
     }
   }
 
   render() {
-    if (Potree.measureTimings) performance.mark("render-start");
+    if (Potree.measureTimings) performance.mark('render-start');
 
     {
       // resize
@@ -1931,8 +1931,8 @@ class Viewer extends EventDispatcher {
     }
 
     if (Potree.measureTimings) {
-      performance.mark("render-end");
-      performance.measure("render", "render-start", "render-end");
+      performance.mark('render-end');
+      performance.measure('render', 'render-start', 'render-end');
     }
   }
 
@@ -1943,7 +1943,7 @@ class Viewer extends EventDispatcher {
       }
       let duration = timestamp - this.toggle;
       if (duration > 1000.0) {
-        let measures = performance.getEntriesByType("measure");
+        let measures = performance.getEntriesByType('measure');
 
         let names = new Set();
         for (let measure of measures) {
@@ -2007,12 +2007,12 @@ class Viewer extends EventDispatcher {
         let csam = 6;
 
         let message =
-          ` ${"NAME".padEnd(cn)} |` +
-          ` ${"MIN".padStart(cmin)} |` +
-          ` ${"MEDIAN".padStart(cmed)} |` +
-          ` ${"MAX".padStart(cmax)} |` +
-          ` ${"SAMPLES".padStart(csam)} \n`;
-        message += ` ${"-".repeat(message.length)}\n`;
+          ` ${'NAME'.padEnd(cn)} |` +
+          ` ${'MIN'.padStart(cmin)} |` +
+          ` ${'MEDIAN'.padStart(cmed)} |` +
+          ` ${'MAX'.padStart(cmax)} |` +
+          ` ${'SAMPLES'.padStart(csam)} \n`;
+        message += ` ${'-'.repeat(message.length)}\n`;
 
         //@ts-ignore;
         names = Array.from(names).sort();
@@ -2045,7 +2045,7 @@ class Viewer extends EventDispatcher {
 
     let queryAll;
     if (Potree.measureTimings) {
-      performance.mark("loop-start");
+      performance.mark('loop-start');
     }
 
     this.update(this.clock.getDelta(), timestamp);
@@ -2053,8 +2053,8 @@ class Viewer extends EventDispatcher {
     this.render();
 
     if (Potree.measureTimings) {
-      performance.mark("loop-end");
-      performance.measure("loop", "loop-start", "loop-end");
+      performance.mark('loop-end');
+      performance.measure('loop', 'loop-start', 'loop-end');
     }
 
     this.resolveTimings(timestamp);
@@ -2065,7 +2065,7 @@ class Viewer extends EventDispatcher {
   postError(content, params = {}) {
     let message = this.postMessage(content, params);
 
-    message.element.addClass("potree_message_error");
+    message.element.addClass('potree_message_error');
 
     return message;
   }
@@ -2075,7 +2075,7 @@ class Viewer extends EventDispatcher {
 
     let animationDuration = 100;
 
-    message.element.css("display", "none");
+    message.element.css('display', 'none');
     message.elClose.click(() => {
       message.element.slideToggle(animationDuration);
 
