@@ -1,4 +1,4 @@
-import Viewer from './ntree/tViewer';
+import Viewer from './ntree/Viewer';
 
 const element = document.getElementById('potree_render_area');
 

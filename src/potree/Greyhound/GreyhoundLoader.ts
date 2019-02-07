@@ -1,16 +1,16 @@
-import * as THREE from "three";
+import * as THREE from 'three';
 
-import Version from "../Version";
+import Version from '../Version';
 
-import PointAttribute from "../PointAttribute";
-import PointAttributes from "../PointAttributes";
+import PointAttribute from '../PointAttribute';
+import PointAttributes from '../PointAttributes';
 
-import GreyhoundUtils from "./GreyhoundUtils";
+import GreyhoundUtils from './GreyhoundUtils';
 
-import PointCloudGreyhoundGeometry from "./PointCloudGreyhoundGeometry";
-import PointCloudGreyhoundGeometryNode$1 from "./PointCloudGreyhoundGeometryNode";
+import PointCloudGreyhoundGeometry from './PointCloudGreyhoundGeometry';
+import PointCloudGreyhoundGeometryNode$1 from './PointCloudGreyhoundGeometryNode';
 
-import GreyhoundBinaryLoader from "./GreyhoundBinaryLoader";
+import GreyhoundBinaryLoader from './GreyhoundBinaryLoader';
 
 const PointCloudGreyhoundGeometryNode = PointCloudGreyhoundGeometryNode$1;
 
@@ -23,21 +23,21 @@ class GreyhoundLoader {
 
   //loadInfoJSON(url, callback) {
   //}
-
+  //@ts-ignore
   static load = async (url: string): Promise<PointCloudGreyhoundGeometry> => {
     let HIERARCHY_STEP_SIZE = 5;
 
     try {
       // We assume everything ater the string 'greyhound://' is the server url
-      let serverURL = url.split("greyhound://")[1];
+      let serverURL = url.split('greyhound://')[1];
       if (
-        serverURL.split("http://").length === 1 &&
-        serverURL.split("https://").length === 1
+        serverURL.split('http://').length === 1 &&
+        serverURL.split('https://').length === 1
       ) {
-        serverURL = "http://" + serverURL;
+        serverURL = 'http://' + serverURL;
       }
 
-      GreyhoundUtils.fetch(serverURL + "info", function(err, data) {
+      GreyhoundUtils.fetch(serverURL + 'info', function(err, data) {
         if (err) throw new Error(err);
 
         /* We parse the result of the info query, which should be a JSON
@@ -60,7 +60,7 @@ class GreyhoundLoader {
 					}
 					*/
         let greyhoundInfo = JSON.parse(data);
-        let version = new Version("1.4");
+        let version = new Version('1.4');
 
         let bounds = greyhoundInfo.bounds;
         // TODO Unused: let boundsConforming = greyhoundInfo.boundsConforming;
@@ -74,8 +74,8 @@ class GreyhoundLoader {
           scale = Math.min(scale[0], scale[1], scale[2]);
         }
 
-        if (GreyhoundUtils.getQueryParam("scale")) {
-          scale = parseFloat(GreyhoundUtils.getQueryParam("scale"));
+        if (GreyhoundUtils.getQueryParam('scale')) {
+          scale = parseFloat(GreyhoundUtils.getQueryParam('scale'));
         }
 
         let baseDepth = Math.max(8, greyhoundInfo.baseDepth);
@@ -90,7 +90,7 @@ class GreyhoundLoader {
         // PointCloudGreyhoundGeometryNode without asking for
         // attributes that we are not currently visualizing.  We assume
         // XYZ are always available.
-        let attributes = ["POSITION_CARTESIAN"];
+        let attributes = ['POSITION_CARTESIAN'];
 
         // To be careful, we only add COLOR_PACKED as an option if all
         // colors are actually found.
@@ -100,19 +100,19 @@ class GreyhoundLoader {
 
         greyhoundInfo.schema.forEach(function(entry) {
           // Intensity and Classification are optional.
-          if (entry.name === "Intensity") {
-            attributes.push("INTENSITY");
+          if (entry.name === 'Intensity') {
+            attributes.push('INTENSITY');
           }
-          if (entry.name === "Classification") {
-            attributes.push("CLASSIFICATION");
+          if (entry.name === 'Classification') {
+            attributes.push('CLASSIFICATION');
           }
 
-          if (entry.name === "Red") red = true;
-          else if (entry.name === "Green") green = true;
-          else if (entry.name === "Blue") blue = true;
+          if (entry.name === 'Red') red = true;
+          else if (entry.name === 'Green') green = true;
+          else if (entry.name === 'Blue') blue = true;
         });
 
-        if (red && green && blue) attributes.push("COLOR_PACKED");
+        if (red && green && blue) attributes.push('COLOR_PACKED');
 
         // Fill in geometry fields.
         const pgg = new PointCloudGreyhoundGeometry();
@@ -146,9 +146,9 @@ class GreyhoundLoader {
         pgg.scale = scale;
         pgg.offset = offset;
 
-        console.log("Scale:", scale);
-        console.log("Offset:", offset);
-        console.log("Bounds:", boundingBox);
+        console.log('Scale:', scale);
+        console.log('Offset:', offset);
+        console.log('Bounds:', boundingBox);
 
         pgg.loader = new GreyhoundBinaryLoader(version, boundingBox, pgg.scale);
 
@@ -156,7 +156,7 @@ class GreyhoundLoader {
 
         {
           // load root
-          let name = "r";
+          let name = 'r';
 
           let root = new PointCloudGreyhoundGeometryNode(
             name,

@@ -41,7 +41,7 @@ class TTree {
       }
     }
 
-    const result = this.updateVisiblity(pointclouds, camera, renderer);
+    // const result = this.updateVisiblity(pointclouds, camera, renderer);
 
     for (let pointcloud of pointclouds) {
       pointcloud.updateMaterial(
@@ -55,7 +55,7 @@ class TTree {
 
     this.lru.freeMemory();
 
-    return result;
+    // return result;
   }
 
   async loadPointCloud(path: string, name: string) {
@@ -75,7 +75,7 @@ class TTree {
         return new PointCloudOctree(geometry);
       } else if (isPOC(path)) {
         const geometry = await POCLoader.load(path);
-        return new PointCloudOctree(geometry);
+        // return new PointCloudOctree(geometry);
       } else if (isArena4D(path)) {
         // const geometry = await PointCloudArena4DGeometry.load(path)
         // return new PointCloudArena4D(geometry);

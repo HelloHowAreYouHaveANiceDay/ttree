@@ -88,35 +88,35 @@ class PointCloudOctreeGeometryNode extends PointCloudTreeNode {
   // }
 
   getURL() {
-    let url = "";
+    let url = '';
 
     let version = this.pcoGeometry.loader.version;
 
-    if (version.equalOrHigher("1.5")) {
+    if (version.equalOrHigher('1.5')) {
       url =
         this.pcoGeometry.octreeDir +
-        "/" +
+        '/' +
         this.getHierarchyPath() +
-        "/" +
+        '/' +
         this.name;
-    } else if (version.equalOrHigher("1.4")) {
-      url = this.pcoGeometry.octreeDir + "/" + this.name;
-    } else if (version.upTo("1.3")) {
-      url = this.pcoGeometry.octreeDir + "/" + this.name;
+    } else if (version.equalOrHigher('1.4')) {
+      url = this.pcoGeometry.octreeDir + '/' + this.name;
+    } else if (version.upTo('1.3')) {
+      url = this.pcoGeometry.octreeDir + '/' + this.name;
     }
 
     return url;
   }
 
   getHierarchyPath() {
-    let path = "r/";
+    let path = 'r/';
 
     let hierarchyStepSize = this.pcoGeometry.hierarchyStepSize;
     let indices = this.name.substr(1);
 
     let numParts = Math.floor(indices.length / hierarchyStepSize);
     for (let i = 0; i < numParts; i++) {
-      path += indices.substr(i * hierarchyStepSize, hierarchyStepSize) + "/";
+      path += indices.substr(i * hierarchyStepSize, hierarchyStepSize) + '/';
     }
 
     path = path.slice(0, -1);
@@ -142,7 +142,7 @@ class PointCloudOctreeGeometryNode extends PointCloudTreeNode {
 
     Potree.numNodesLoading++;
 
-    if (this.pcoGeometry.loader.version.equalOrHigher("1.5")) {
+    if (this.pcoGeometry.loader.version.equalOrHigher('1.5')) {
       if (
         this.level % this.pcoGeometry.hierarchyStepSize === 0 &&
         this.hasChildren
@@ -247,16 +247,16 @@ class PointCloudOctreeGeometryNode extends PointCloudTreeNode {
       // let hurl = node.pcoGeometry.octreeDir + "/../hierarchy/" + node.name + ".hrc";
       let hurl =
         node.pcoGeometry.octreeDir +
-        "/" +
+        '/' +
         node.getHierarchyPath() +
-        "/" +
+        '/' +
         node.name +
-        ".hrc";
+        '.hrc';
 
       let xhr = XHRFactory.createXMLHttpRequest();
-      xhr.open("GET", hurl, true);
-      xhr.responseType = "arraybuffer";
-      xhr.overrideMimeType("text/plain; charset=x-user-defined");
+      xhr.open('GET', hurl, true);
+      xhr.responseType = 'arraybuffer';
+      xhr.overrideMimeType('text/plain; charset=x-user-defined');
       xhr.onreadystatechange = () => {
         if (xhr.readyState === 4) {
           if (xhr.status === 200 || xhr.status === 0) {
@@ -264,9 +264,9 @@ class PointCloudOctreeGeometryNode extends PointCloudTreeNode {
             callback(node, hbuffer);
           } else {
             console.log(
-              "Failed to load file! HTTP status: " +
+              'Failed to load file! HTTP status: ' +
                 xhr.status +
-                ", file: " +
+                ', file: ' +
                 hurl
             );
             Potree.numNodesLoading--;
@@ -276,7 +276,7 @@ class PointCloudOctreeGeometryNode extends PointCloudTreeNode {
       try {
         xhr.send(null);
       } catch (e) {
-        console.log("fehler beim laden der punktwolke: " + e);
+        console.log('fehler beim laden der punktwolke: ' + e);
       }
     }
   }

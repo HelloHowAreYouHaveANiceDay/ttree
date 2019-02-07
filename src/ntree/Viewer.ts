@@ -1,3 +1,11 @@
 export default class Viewer {
-  constructor() {}
+  renderArea: HTMLElement;
+  constructor(element: HTMLElement) {
+    this.renderArea = element;
+  }
+
+  loadPointCloud(path) {
+    //POCLoader
+    //PointCloudOctree
+  }
 }

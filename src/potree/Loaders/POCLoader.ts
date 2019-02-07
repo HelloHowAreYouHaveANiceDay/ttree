@@ -1,27 +1,28 @@
-import * as THREE from "three";
+import * as THREE from 'three';
 
-import PointCloudOctreeGeometry from "../Octree/PointCloudOctreeGeometry";
-import PointCloudOctreeGeometryNode from "../Octree/PointCloudOctreeGeometryNode";
-import PointAttribute from "../PointAttribute";
-import PointAttributes from "../PointAttributes";
+import PointCloudOctreeGeometry from '../Octree/PointCloudOctreeGeometry';
+import PointCloudOctreeGeometryNode from '../Octree/PointCloudOctreeGeometryNode';
+import PointAttribute from '../PointAttribute';
+import PointAttributes from '../PointAttributes';
 
-import LasLazLoader from "./LasLazLoader";
-import BinaryLoader from "./BinaryLoader";
+import LasLazLoader from './LasLazLoader';
+import BinaryLoader from './BinaryLoader';
 
-import XHRFactory from "../XHRFactory";
-import Utils from "../Utils";
-import Version from "../Version";
+import XHRFactory from '../XHRFactory';
+import Utils from '../Utils';
+import Version from '../Version';
 
 interface POCLoader {}
 
 class POCLoader {
+  //@ts-ignore
   static async load(url): Promise<PointCloudOctreeGeometry> {
     try {
       let pco = new PointCloudOctreeGeometry();
       pco.url = url;
       let xhr = XHRFactory.createXMLHttpRequest();
 
-      xhr.open("GET", url, true);
+      xhr.open('GET', url, true);
 
       xhr.onreadystatechange = function() {
         if (xhr.readyState === 4 && (xhr.status === 200 || xhr.status === 0)) {
@@ -30,10 +31,10 @@ class POCLoader {
           let version = new Version(fMno.version);
 
           // assume octreeDir is absolute if it starts with http
-          if (fMno.octreeDir.indexOf("http") === 0) {
+          if (fMno.octreeDir.indexOf('http') === 0) {
             pco.octreeDir = fMno.octreeDir;
           } else {
-            pco.octreeDir = url + "/../" + fMno.octreeDir;
+            pco.octreeDir = url + '/../' + fMno.octreeDir;
           }
 
           pco.spacing = fMno.spacing;
@@ -89,9 +90,9 @@ class POCLoader {
             new THREE.Sphere()
           );
           pco.offset = offset;
-          if (fMno.pointAttributes === "LAS") {
+          if (fMno.pointAttributes === 'LAS') {
             pco.loader = new LasLazLoader(fMno.version);
-          } else if (fMno.pointAttributes === "LAZ") {
+          } else if (fMno.pointAttributes === 'LAZ') {
             pco.loader = new LasLazLoader(fMno.version);
           } else {
             pco.loader = new BinaryLoader(
@@ -106,13 +107,13 @@ class POCLoader {
 
           {
             // load root
-            let name = "r";
+            let name = 'r';
 
             let root = new PointCloudOctreeGeometryNode(name, pco, boundingBox);
             root.level = 0;
             root.hasChildren = true;
             root.spacing = pco.spacing;
-            if (version.upTo("1.5")) {
+            if (version.upTo('1.5')) {
               root.numPoints = fMno.hierarchy[0][1];
             } else {
               root.numPoints = 0;
@@ -123,7 +124,7 @@ class POCLoader {
           }
 
           // load remaining hierarchy
-          if (version.upTo("1.4")) {
+          if (version.upTo('1.4')) {
             for (let i = 1; i < fMno.hierarchy.length; i++) {
               let name = fMno.hierarchy[i][0];
               let numPoints = fMno.hierarchy[i][1];
