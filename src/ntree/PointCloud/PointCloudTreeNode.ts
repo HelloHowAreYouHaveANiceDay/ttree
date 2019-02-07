@@ -1,6 +1,6 @@
 import EventDispatcher from '../EventDispatcher';
 
-export default interface PointCloudTreeNode extends EventDispatcher {
+export default interface PointCloudTreeNode {
   needsTransformUpdate: boolean;
   getChildren: () => any[];
   getBoundingBox: () => THREE.Box3;

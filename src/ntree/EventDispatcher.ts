@@ -5,7 +5,7 @@ interface dispatchEvent {
 }
 
 export default class EventDispatcher {
-  debug = true;
+  debug?: boolean = true;
   private listeners = {};
   constructor() {}
 
