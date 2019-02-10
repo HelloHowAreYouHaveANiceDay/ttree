@@ -4,6 +4,7 @@ import PointCloudOctreeGeometry from './PointCloud/PointCloudOctreeGeometry';
 import Cloud from './PointCloud/Cloud';
 import { request } from './XHR';
 import PointCloudOctreeGeometryNode from '../potree/Octree/PointCloudOctreeGeometryNode';
+import { PointAttributes } from './PointCloud/PointAttributes';
 
 export default class POCLoader {
   static async load(url: string): Promise<PointCloudOctreeGeometry> {
@@ -107,8 +108,38 @@ export default class POCLoader {
     } catch (err) {
       throw err;
     }
-    // XHRFactory
-    // Point Attributes
     // PointCloudOctreeGeometryNode
+  }
+
+  loadPointAttributes(mno: Cloud) {
+    const fpa = mno.pointAttributes;
+    const pa = new PointAttributes(fpa);
+    return pa;
+  }
+
+  createChildAABB(aabb: THREE.Box3, index) {
+    let min = aabb.min.clone();
+    let max = aabb.max.clone();
+    let size = new THREE.Vector3().subVectors(max, min);
+
+    if ((index & 0b0001) > 0) {
+      min.z += size.z / 2;
+    } else {
+      max.z -= size.z / 2;
+    }
+
+    if ((index & 0b0010) > 0) {
+      min.y += size.y / 2;
+    } else {
+      max.y -= size.y / 2;
+    }
+
+    if ((index & 0b0100) > 0) {
+      min.x += size.x / 2;
+    } else {
+      max.x -= size.x / 2;
+    }
+
+    return new THREE.Box3(min, max);
   }
 }

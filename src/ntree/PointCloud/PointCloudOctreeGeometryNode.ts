@@ -1,3 +1,4 @@
+import R from 'ramda';
 import * as THREE from 'three';
 
 import PointCloudOctreeGeometry from './PointCloudOctreeGeometry';
@@ -5,6 +6,7 @@ import PointCloudOctreeGeometry from './PointCloudOctreeGeometry';
 import PointCloudTreeNode from './PointCloudTreeNode';
 
 import ntree from '../ntree';
+import { PointAttributes } from './PointAttributes';
 
 export default class PointCloudOctreeGeometryNode
   implements PointCloudTreeNode {
@@ -12,9 +14,10 @@ export default class PointCloudOctreeGeometryNode
   name: string;
   index: number;
   pcoGeometry: PointCloudOctreeGeometry;
+  tightBoundingBox?: THREE.Box3;
   boundingBox: THREE.Box3;
   boundingSphere: THREE.Sphere;
-  pointAttributes?: string[] | string;
+  pointAttributes?: PointAttributes;
   children: object;
   numPoints: number;
   level: number;
@@ -24,14 +27,16 @@ export default class PointCloudOctreeGeometryNode
   oneTimeDisposeHandlers: any[];
   hierarchyStepSize?: number;
   octreeDir?: string;
-  geometry?: PointCloudOctreeGeometry;
+  geometry?: THREE.BufferGeometry;
+  mean?: THREE.Vector3;
+  estimatedSpacing?: any;
   parent?: PointCloudOctreeGeometryNode;
 
   needsTransformUpdate: boolean = false;
   constructor(
     name: string,
     pcoGeometry: PointCloudOctreeGeometry,
-    boundingBox: THREE.Box3
+    boundingBox: THREE.Box3,
   ) {
     this.needsTransformUpdate = true;
     this.name = name;
@@ -67,6 +72,10 @@ export default class PointCloudOctreeGeometryNode
 
   getBoundingBox() {
     return this.boundingBox;
+  }
+
+  hasChildren() {
+    return R.values(this.children).length > 0;
   }
 
   getChildren() {
